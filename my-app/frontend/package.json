@@ -19,6 +19,7 @@
     "export": "next build && next export"
   },
   "dependencies": {
+    "bootstrap": "^5.2.3",
     "ethers": "^5.7.2",
     "moment": "^2.29.4",
     "next": "^12.3.1",

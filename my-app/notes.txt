@@ -1,0 +1,7 @@
+revision of css 
+
+5 types of positioning 
+static is easy and default 
+relative is when the reference point is the starting point of the element itself 
+absolut is when it takes reference of a non static tag or the whole page itself 
+sticky is cool to implement its basically when u scroll past the tag and it sticks on the top or bottom corner 

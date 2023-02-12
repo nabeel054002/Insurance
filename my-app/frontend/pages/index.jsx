@@ -24,6 +24,10 @@ export default function Home() {
   const [mintingDAI, setMintingDAI] = useState(0);
   const [userABalance, setUserABalance] = useState(zero);
   const [userBBalance, setUserBBalance] = useState(zero);
+  const [BfromAAVE, setBfromAAVE] = useState(0);
+  const [AfromAAVE, setAfromAAVE] = useState(0);
+  const [BfromCompound, setBfromCompound] = useState(0);
+  const [AfromCompound, setAfromCompound] = useState(0);
 
   const [value, setValue] = useState(0);
   // {
@@ -140,22 +144,29 @@ export default function Home() {
     await tx.wait();
   }
 
+  const handleBfromAAVE = async (elm) =>{
+    setBfromAAVE(elm);
+  }
+
   //so by doing a function call the state is changing then handle that, and render differently, if it rendered so, but dont handle the change that occurs when the user lets the site open for too long
   const SScreen = ()=>{
-    return (<div>
-      <h1>InsuraTranch</h1>
-      <h2>InsuraTranch is a decentralized insurance protocol on the Polygon network.</h2>
-      <h2>This page is to provide insurance to those who are willing to stake their in <br></br>AAVE and Compound to gain aDAI and cDAI</h2>  
-      <div className={styles.splitRisk}>
-        <div className={styles.content}>
-          <h3>To insure your DAI investments in AAVE and Compound, and get your Tranche tokens</h3>
-          <h3>Deposit your DAI into the InsuraTranch protocol</h3>
-            <input type="number" onChange = {(e)=>{
+    return (<div className={styles.sscreen}>
+      <h2>Insure your DAI investments using InsuraTranch</h2>
+      <br/>
+      <h4>InsuraTranch is a decentralized insurance protocol on the Mumbai network.</h4>
+      <h4>This page is to provide insurance to those who are willing to stake their in AAVE and Compound to gain aDAI and cDAI</h4>  
+      <div className="card">
+        <div className="card-header">
+          <h4>To insure your DAI investments in AAVE and Compound</h4></div>
+          <div className="card-body">
+          <h5>Deposit your DAI into the InsuraTranch protocol</h5><br/>
+          <p className={styles.content}>A  protocol in which a particular token is pooled in which are used to buy the return accruing interest in 2 different protocols. In exchange of pooling the tokens, there are 50% A tranche tokens and 50% B tranche tokens that get issued to the end user that pooled the tokens, the A tranche tokens have lower risk and will get lower returns and B is the opposite. The risk mitigation happens through trading of A tranche and B tranche tokens and not by the protocol giving you the tranche tokens.`</p>
+            <input placeholder = "Enter DAI Amount" type="number" onChange = {(e)=>{
               setMintingDAI(e.target.value)
             }}/>
-            <button onClick={()=>console.log(mintingDAI)/*there should be mintDAI function over here, but the setMintingDAI thing above is not working*/}>Deposit</button>
+            <button className="btn btn-danger btn-sm" onClick={()=>console.log(mintingDAI)/*there should be mintDAI function over here, but the setMintingDAI thing above is not working*/}>Deposit</button>
+          </div>
         </div>
-      </div>
     </div>)
   }
 
@@ -235,14 +246,47 @@ export default function Home() {
         }}>
         <div className={styles.left}>
           <h2> Claim your A tranche tokens</h2>
+
+          <div className={styles.leftdiv}>
+          <h3>You have {userABalance.toString()} A tranche tokens</h3>
+          <div>
+            How much of your A tranche tokens do you want to redeem from AAVE?
+            <br/>
+            <input placeholder="Amount from AAVE"></input>
+          </div>
+          <div>
+          How much of your A tranche tokens do you want to redeem from Compound?
+          <br/>
+          <input placeholder="Amount from Compound"></input>
+          </div>
+          </div>
         </div>
         <div className={styles.center}>
           <h2>
             Due to fallback mode, you will have to decide how many of your tranches get redeemed from which protocol
           </h2>
+          
         </div>
         <div className={styles.right}>
           <h2>Claim your B tranche tokens</h2>
+
+          <div className={styles.leftdiv}>
+          <h3>You have {userABalance.toString()} A tranche tokens</h3>
+          <div>
+            How much of your A tranche tokens do you want to redeem from AAVE?
+            <br></br>
+            <input placeholder="Amount from AAVE" onChange = {(e) =>handleBfromAAVE(e.target.value)}></input>
+          </div>
+          <div>
+          How much of your A tranche tokens do you want to redeem from Compound?
+          <br/>
+          <input placeholder="Amount from Compound"></input>
+          </div>
+          </div>
+          <div className={styles.btn_claim}>
+            <button className="btn btn-danger btn-primary btn-lg">Claim!</button>
+          </div>
+          
         </div>
         </div>
       </div>
@@ -251,8 +295,8 @@ export default function Home() {
   const Screen = () => {
     if (blockTimeStamp < S){
       return(
-        // <SScreen/>
-        <AboveTThree/>
+        <TTwo/>
+        // <AboveTThree/>
       )
     }
     else if (blockTimeStamp < tOne){
