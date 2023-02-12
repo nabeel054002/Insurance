@@ -275,12 +275,14 @@ export default function Home() {
           <div>
             How much of your A tranche tokens do you want to redeem from AAVE?
             <br></br>
-            <input placeholder="Amount from AAVE" onChange = {(e) =>handleBfromAAVE(e.target.value)}></input>
+            <input placeholder="Amount from AAVE"  onChange = {(e) =>setBfromAAVE(e.target.value)}></input>
           </div>
           <div>
           How much of your A tranche tokens do you want to redeem from Compound?
           <br/>
-          <input placeholder="Amount from Compound"></input>
+          <input placeholder="Amount from Compound" onChange = {(e)=>{
+            console.log(e.target.value)
+          }}></input>
           </div>
           </div>
           <div className={styles.btn_claim}>
@@ -295,8 +297,8 @@ export default function Home() {
   const Screen = () => {
     if (blockTimeStamp < S){
       return(
-        <TTwo/>
-        // <AboveTThree/>
+        // <TTwo/>
+        <AboveTThree/>
       )
     }
     else if (blockTimeStamp < tOne){
