@@ -1,0 +1,7 @@
+so i think so there is a standard way to implement proxy, so im trying to learn that first 
+
+UUPS = universal upgradeable proxy std 
+
+fallback fn is called when the contract cant find a method 
+
+we basically use this fallback to delegate call to a different smart contract 
