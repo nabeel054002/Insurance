@@ -1,14 +1,90 @@
 
 
 .heading {
-  position: fixed;
+  position: sticky;
   top: 50px;
-  left: 100px;
+  padding-left: 100px;
   font-size: 2.5em;
   color: white;
 
 }
+
+.title {
+  margin: 0;
+  line-height: 1.15;
+  font-size: 4rem;
+  justify-content: left;
+}
+
+.intro { 
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.firstLogo{
+  width: 100px;
+}
+
+.headerContainer{
+  display: flex;
+}
+
+.container { 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .header{
+  display: flex;
+  width: 100vw;
+  height: 15vh;
+  justify-content: space-around;
+  background-color: maroon;
+}
+
+.addrName {
+  color: #eaeaea;
+  margin: auto auto;
+  width: 100px;
+  font-size: 1.5em;
+}
+
+.firstDiv {
+  width: 800px;
+  overflow: hidden;
+  word-wrap: break-word;
+}
+
+.imageUniswap {
+  width: 400px;
+  height: 150px;
+}
+
+.initContent{
+
+}
+
+.buttonsFirstPg { 
+  display: flex;
+  justify-content: space-evenly;
+  flex-grow: 1;
+}
+
+.topName {
+  margin: auto auto;
+  color: white;
+  font-size: 2.5em;
+}
+
+.footerText { 
+  font-size: 1.5em;
+  color: white;
+}
+
+.footer {
+  position: sticky;
+  top: -3000px;
   width: 100xh;
   height: 15vh;
   background-color: maroon;
@@ -22,22 +98,33 @@
 }
 
 .top {
-  position: fixed;
-  top: 5cm;
+  position: relative;
+  top: 0cm;
   left: 100px;
 }
 
+.toptxt {
+  position: relative;
+  top: -2cm;
+}
+
+.scndtxt {
+  position: relative;
+  top: 0cm;
+}
+
 .left {
-  position: fixed;
-  top: 10cm;
+  position: relative;
+  top: -2.7cm;
+  left: 100px;
   width: 1000px;
   overflow: hidden;
   word-wrap: break-word;
 }
 
 .right {
-  position: fixed;
-  top: 10cm;
+  position: relative;
+  top: -10cm;
   left: 20cm;
   width: 1000px;
   overflow: hidden;
@@ -55,7 +142,7 @@
 }
 
 .splitRisk {
-  position: fixed;
+  position: sticky;
   top: 10cm;
   left:100px;
   height: 300px;
@@ -67,9 +154,9 @@
 }
 
 .content{
-  width: 1200px;
-  overflow: hidden;
-  word-wrap: break-word;
+  position: relative;
+  top: 4cm;
+  left: -2.7cm;
 }
 .form {
   display: flex;
@@ -84,21 +171,37 @@
 }
 
 .leftdiv {
+  position: sticky;
   float: left;
   width: 33.33%;
   margin: 0 10px;
 }
 
 .rightdiv {
+  position: sticky;
   float: right;
   width: 33.33%;
   margin: 0 10px;
 }
 
+.topFirst { 
+  position: relative;
+  top: -5cm;
+  left: -4.3cm;
+}
+
 .centerdiv {
+  position: sticky;
   display: inline-block;
   width: 33.33%;
   margin: 0 10px 10px 40px;
+}
+
+.contentFirst{
+  position: relative;
+  width: 1000px;
+  overflow: hidden;
+  word-wrap: break-word;
 }
 
 .sscreen {
@@ -108,9 +211,9 @@
 }
 
 .btn_claim {
-  position: fixed;
-  top: 18cm;
-  left: 14cm;
+  position: relative;
+  top: -9cm;
+  left: 15cm;
 }
 
 .footer {
@@ -140,11 +243,7 @@
   text-decoration: underline;
 }
 
-.title {
-  margin: 0;
-  line-height: 1.15;
-  font-size: 4rem;
-}
+
 
 .title,
 .description {
@@ -204,6 +303,16 @@
   line-height: 1.5;
 }
 
+.fut { 
+  display: flex;
+  color: white;
+  list-style: none;
+  width: 100%;
+}
+.fut_content{
+  justify-content: space-between;
+}
+
 .logo {
   height: 1em;
   margin-left: 0.5rem;
@@ -226,5 +335,12 @@
   }
   .logo img {
     filter: invert(1);
+  }
+}
+@media screen and (max-width: 600px) {
+  .container { 
+    position: relative;
+    top: -5cm;
+    left: -4.3cm;
   }
 }

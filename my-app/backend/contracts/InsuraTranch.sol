@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.17;
 
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "./Tranche.sol";
 import "./ITranche.sol";
 
@@ -22,23 +23,27 @@ c = Dai (Maker DAI)
 x = Aave protocol (cx = aDAI)
 y = Compound protocol (cy = cDAI)
 */
-contract InsuraTranch {
+contract InsuraTranch is Initializable{
+
+    //the initializer function is that for the parent contrat, be sure to read it in https://docs.openzeppelin.com/upgrades-plugins/1.x/writing-upgradeable
+
     /* Internal and external contract addresses  */
     address public A; // Tranche A token contract
-    address public B; // Tranche A token contract
+    address public B; // Tranche B token contract
 
-    address public  c = 0x6B175474E89094C44Da98b954EedeAC495271d0F; // Maker DAI token
-    address public  x = 0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9; // Aave v2 lending pool
-    address public cx = 0x028171bCA77440897B824Ca71D1c56caC55b68A3; // Aave v2 interest bearing DAI (aDAI)
-    address public cy = 0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643; // Compound interest bearing DAI (cDAI)
+    address public  c;
+    address public  x;
+    address public cx;
+    address public cy;
 
     /* Math helper for decimal numbers */
     uint256 constant RAY = 1e27; // Used for floating point math
 
-    uint256 public immutable S;
-    uint256 public immutable T1;
-    uint256 public immutable T2;
-    uint256 public immutable T3;
+    //the values are being set in initialize function, but to be sure that it can only be called once i have added the bool condition
+    uint256 public S;
+    uint256 public T1;
+    uint256 public T2;
+    uint256 public T3;
 
     /* State tracking */
     uint256 public totalTranches; // Total A + B tokens
@@ -62,7 +67,7 @@ contract InsuraTranch {
     event Claim(address indexed claimant, uint256 amount_A, uint256 amount_B, uint256 amount_c, uint256 amount_cx, uint256 amount_cy);
 
 
-    function initialize (uint256 _S, uint256 _T1,  uint256 _T2, uint256 _T3, address _c, address _x, address _cx, address _cy) public {
+    function initialize (uint256 _S, uint256 _T1,  uint256 _T2, uint256 _T3, address _c, address _x, address _cx, address _cy) public onlyInitializing {
         A = address(new Tranche("Tranche A", "A"));
         B = address(new Tranche("Tranche B", "B"));
         S = _S;
@@ -73,7 +78,6 @@ contract InsuraTranch {
         x = _x;
         cx = _cx;
         cy = _cy;
-        initialized = true;
     }
 
     function proxiableUUID() public pure returns (bytes32) {
@@ -121,7 +125,7 @@ contract InsuraTranch {
     function investInXandY (uint256 balance_c) internal virtual{
         // Protocol X: Aave
         IERC20(c).approve(x, balance_c);
-        IAaveLendingpool(x).deposit(c, balance_c, me, 0);
+        IAaveLendingpool(x).deposit(c, balance_c, address(this), 0);
 
         // Protocol Y: Compound
         IERC20(c).approve(cy, balance_c);
@@ -134,7 +138,7 @@ contract InsuraTranch {
         require(block.timestamp < T2, "split: already in claim period");
         IERC20 cToken  = IERC20(c);
         
-        uint256 [] arr = divestFromXandY();
+        uint256 [4] memory arr = divestFromXandY();
         uint256 interest = arr[0];
         uint256 halfOfTranches = arr[1];
         uint256 balance_cx = arr[2];
@@ -160,7 +164,7 @@ contract InsuraTranch {
         emit Divest(balance_c, balance_cx, balance_cy, 0);
     }
 
-    function divestFromXandY() internal virtual{
+    function divestFromXandY() internal virtual returns(uint256 [4] memory){
         IERC20 cToken  = IERC20(c);
         IERC20 cxToken = IERC20(cx);
         IcDAI  cyToken = IcDAI(cy);
@@ -238,11 +242,11 @@ contract InsuraTranch {
             amount_B = tranches_to_cx + tranches_to_cy;
         }
 
-        uint256[] arr = _payoutsFallback();
+        uint256[2] memory arr = _payoutsFallback(tranches_to_cx, tranches_to_cy, trancheAddress);
 
         emit Claim(msg.sender, amount_A, amount_B, 0, arr[0], arr[1]);
     }
-    function _payoutsFallback(uint256 tranches_to_cx,  uint256 tranches_to_cy, address trancheAddress) internal virtual{
+    function _payoutsFallback(uint256 tranches_to_cx,  uint256 tranches_to_cy, address trancheAddress) internal virtual returns (uint256 [2]memory ){
         
         //the need to make this function as overriden is because of the case the existence of transfer function 
         //and maybe the declaration of the wrapped tokens to be IERC20 or so...
