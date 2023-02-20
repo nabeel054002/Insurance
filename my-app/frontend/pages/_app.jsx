@@ -47,8 +47,9 @@ function MyApp({ Component, pageProps }) {
     
         const { chainId } = await web3Provider.getNetwork();
         if (chainId !== 1 ) {
-          window.alert("Please switch to the Matic network!");
-          throw new Error("Please switch to the Matic network");
+          console.log(chainId)
+          // window.alert("Please switch to the Hardhat fork network!");
+          throw new Error("Please switch to the Hardhat fork network");
         }
     
         if (needSigner) {

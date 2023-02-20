@@ -4,7 +4,7 @@ import styles from "../styles/Home.module.css";
 import {useRef, useEffect, useState, React} from "react"
 import { BigNumber, providers, ethers, Contract, utils} from "ethers";
 import Web3Modal from "web3modal";
-import {Addr, Abi, TrancheAbi} from "../constants";
+import {Addr, Abi, TrancheAbi, daiAbi} from "../constants";
 import Footer from "../components/Footer";
 const moment = require('moment')
 
@@ -31,30 +31,56 @@ export default function Home(signerInput) {
 
   useEffect( () => {
     if (signerInput) {
+      console.log(signerInput)
         setSigner(signerInput.prop1);
         if(signer){
+          console.log("Getting times")
           getTimes();
-        updateBlockTimestamp();//need to see if this is necessary
-        getUserTrancheBalance();
+          console.log("Got times. now getting timestamps")
+          console.log(tOne)
+          console.log(tTwo)
+          updateBlockTimestamp();//need to see if this is necessary
+          console.log("getting user tranches balalnces")
+          getUserTrancheBalance();
         }
       }
 
-    })
+    }, [signer])
+
+  const Loading = () => {
+    return (
+      <div className={styles.loading}>
+        <h1>{S}</h1>
+        <h1>{tOne}</h1>
+        <h1>{tTwo}</h1>
+      </div>
+    )
+  }
 
   const getTimes = async () =>{
     //to be run only once 
     const contract = new Contract(Addr, Abi, signer);
-    setS((await contract.S()))
+    let s = (await contract.S())
+    setS(s)
     setTOne((await contract.T1()));
     setTTwo((await contract.T2()));
     setTThree((await contract.T3()));
+    console.log(s);
+    console.log(tOne);
+    console.log(tTwo)
   }
   
 
   const mintForDAI = async (value) => {
     const contract = new Contract(Addr, Abi, signer);
     const valueBN = utils.parseUnits(value, 18);
-    // const tx = await contract.splitRisk(valueBN)
+    console.log(valueBN)
+    const dai = new Contract("0x6b175474e89094c44da98b954eedeac495271d0f", daiAbi, signer);
+    const tx2 = await dai.approve(Addr, valueBN);
+    const tx = await contract.splitRisk(valueBN, {
+      gasLimit: 1000000,
+    });
+    await tx.wait()
   }
 
   const updateBlockTimestamp = async () =>{
@@ -109,7 +135,14 @@ export default function Home(signerInput) {
     await tx.wait();
   }
 
-
+  const Balances = () =>{
+    return (
+      <div className={styles.balances}>
+        <h3>Tranche A Balance: {utils.formatUnits(userABalance.toString(), 18)}</h3>
+        <h3>Tranche B Balance: {utils.formatUnits(userBBalance.toString(), 18)}</h3>
+      </div>
+    )
+  }
 
   //so by doing a function call the state is changing then handle that, and render differently, if it rendered so, but dont handle the change that occurs when the user lets the site open for too long
   const SScreen = ()=>{
@@ -119,6 +152,7 @@ export default function Home(signerInput) {
       <h4>InsuraTranch is a decentralized insurance protocol on the Mumbai network.</h4>
       <h4>This page is to provide insurance to those who are willing to stake their in AAVE and Compound to gain aDAI and cDAI</h4>  
       <br/>
+      <Balances/>
       <div className="card">
         <div className="card-header">
           <h4>To insure your DAI investments in AAVE and Compound</h4></div>
@@ -127,9 +161,11 @@ export default function Home(signerInput) {
           <p className={styles.contentFirst}>A  protocol in which a particular token is pooled in which are used to buy the return accruing interest in 2 different protocols. In exchange of pooling the tokens, there are 50% A tranche tokens and 50% B tranche tokens that get issued to the end user that pooled the tokens, the A tranche tokens have lower risk and will get lower returns and B is the opposite. The risk mitigation happens through trading of A tranche and B tranche tokens and not by the protocol giving you the tranche tokens.`</p>
             <input placeholder = "Enter DAI Amount" type="number" onChange = {(e)=>{
               amountOfDAI = (e.target.value)
+              console.log("e.target.value", e.target.value)
             }}/>
             <button className="btn btn-danger btn-sm" onClick={()=>{
-              const tx = mintForDAI(amountOfDAI);
+              console.log(amountOfDAI)
+              mintForDAI(amountOfDAI);//redirect to success page
               }}>Deposit</button>
           </div>
         </div>
@@ -258,9 +294,12 @@ export default function Home(signerInput) {
       return(
         <SScreen/>
         // <TThree/>
+        //change the name insurance
+        // <TThree/>
         // <AboveTThree/>
       )
     }
+    //get aDAI and cDAI balance
     else if (blockTimeStamp < tOne){
       return(
         <TOne/>
@@ -277,10 +316,12 @@ export default function Home(signerInput) {
         <TThree/>
       )
     }
-    else{
+    else if (blockTimeStamp > tThree){
       return(
         <AboveTThree/>
       )
+  } else{
+    <Loading/>
   }
 }
   return (
@@ -297,8 +338,21 @@ export default function Home(signerInput) {
       <main className={styles.main}>
         <div>
           <Screen/>
+          {blockTimeStamp} is blocktimestamp
+          {S.toString()} is S
+          {tOne.toString()} is tone
+          {tTwo.toString()} is ttwo
+          {tThree.toString()} is t three
+          <div>
+          </div>
         </div>
       </main>
     </div>
   );
 }
+
+/**
+ * 
+ * 1676900795 is blocktimestamp1676900917 is S1676901277 is tone1676901397 is ttwo1676901577 is t three
+ * 
+ */

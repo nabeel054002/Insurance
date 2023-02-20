@@ -10,6 +10,12 @@ import { getAddress } from "ethers/lib/utils";
 import {insuraTranch} from "./images/insuratranch.png"
 import Link from "next/link";
 
+/***
+ * 
+ * how is it insurance 
+ * insuratranch
+ */
+
 
 export default function Home (signerInput) {
 
@@ -21,7 +27,7 @@ export default function Home (signerInput) {
             setSigner(signerInput.prop1)
             getAddress()
         }
-    })
+    }, [signer])
 
     const getAddress = async () => {
         if(signer){
@@ -71,7 +77,6 @@ The BearerOfAll on the other hand, takes lower priority and is exposed to all of
             </div>
             <img className={styles.imageUniswap}src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Uniswap_Logo_and_Wordmark.svg" alt="InsuraTranch logo"></img>
         
-            {console.log(Compnnt())}
         </div><br/><br/><br/>
         <div className={styles.Insurances}>
             <h3>Your Insurances</h3>

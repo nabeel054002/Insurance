@@ -72,10 +72,10 @@ contract SplitInsurance {
     constructor () {
         A = address(new Tranche("Tranche A", "A"));
         B = address(new Tranche("Tranche B", "B"));
-        S = block.timestamp + 3600 * 24 * 7; // +7 days//to add T1, T2, T3 as the input
-        T1 = S + 3600 * 24 * 28; // +28 days
-        T2 = T1 + 3600 * 24 * 1; // +1 day
-        T3 = T2 + 3600 * 24 * 3; // +3days
+        S = block.timestamp + 60 * 3; // +3 minutes// add T1, T2, T3 as the input
+        T1 = S + 60 * 6; // +6minutes
+        T2 = T1 + 60 * 2; // +2minutes
+        T3 = T2 + 60 * 3; // +3minutes
     }
 
     /// @notice Deposit Dai into the protocol. Receive equal amounts of A and B tranches.
@@ -119,6 +119,7 @@ contract SplitInsurance {
         IAaveLendingpool(x).deposit(c, balance_c / 2, me, 0);
 
         // Protocol Y: Compound
+        cToken.approve(cy, balance_c/2);
         require(
             IcDAI(cy).mint(balance_c / 2) == 0,
             "split: error while minting cDai"
