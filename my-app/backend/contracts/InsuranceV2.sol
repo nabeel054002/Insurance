@@ -1,10 +1,15 @@
+//aim is to replicate the insurance.sol, but now just include virtual override and aim to deploy using proxy
+//the assumption is that c, cx and cy are erc20 compatible
+
+
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.17;
 
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "./Tranche.sol";
 import "./ITranche.sol";
+import "./SplitRiskV2Assist.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 interface IAaveLendingpool {
     function deposit(address asset, uint256 amount, address onBehalfOf, uint16 referralCode) external;
@@ -17,33 +22,32 @@ interface IcDAI is IERC20 {
 }
 
 
-/*
-For variable descriptions, see paper.
-c = Dai (Maker DAI)
-x = Aave protocol (cx = aDAI)
-y = Compound protocol (cy = cDAI)
-*/
-contract InsuraTranch is Initializable{
-
-    //the initializer function is that for the parent contrat, be sure to read it in https://docs.openzeppelin.com/upgrades-plugins/1.x/writing-upgradeable
-
+contract SplitInsuranceV2 is Initializable{
     /* Internal and external contract addresses  */
     address public A; // Tranche A token contract
-    address public B; // Tranche B token contract
+    address public B; // Tranche A token contract
 
-    address public  c;
-    address public  x;
-    address public cx;
-    address public cy;
+    SplitRiskV2Assist AssistContract;
+
+    address public  c = 0x6B175474E89094C44Da98b954EedeAC495271d0F; // Maker DAI token
+    address public  x = 0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9; // Aave v2 lending pool
+    address public cx = 0x028171bCA77440897B824Ca71D1c56caC55b68A3; // Aave v2 interest bearing DAI (aDAI)
+    address public cy = 0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643; // Compound interest bearing DAI (cDAI)
 
     /* Math helper for decimal numbers */
     uint256 constant RAY = 1e27; // Used for floating point math
 
-    //the values are being set in initialize function, but to be sure that it can only be called once i have added the bool condition
+    /*
+      Time controls
+      - UNIX timestamps
+      - Can be defined globally (here) or relative to deployment time (constructor)
+    */
     uint256 public S;
     uint256 public T1;
     uint256 public T2;
     uint256 public T3;
+
+    // bool initialized = false;
 
     /* State tracking */
     uint256 public totalTranches; // Total A + B tokens
@@ -58,8 +62,6 @@ contract InsuraTranch is Initializable{
     uint256 public cxPayout; // Payout in cx tokens per (A or B) tranche, after dividing by RAY
     uint256 public cyPayout; // Payout in cy tokens per (A or B) tranche, after dividing by RAY
 
-    bool initialized = false;
-
     /* Events */
     event RiskSplit(address indexed splitter, uint256 amount_c);
     event Invest(uint256 amount_c, uint256 amount_cx, uint256 amount_cy, uint256 amount_c_incentive);
@@ -67,17 +69,18 @@ contract InsuraTranch is Initializable{
     event Claim(address indexed claimant, uint256 amount_A, uint256 amount_B, uint256 amount_c, uint256 amount_cx, uint256 amount_cy);
 
 
-    function initialize (uint256 _S, uint256 _T1,  uint256 _T2, uint256 _T3, address _c, address _x, address _cx, address _cy) public onlyInitializing {
-        A = address(new Tranche("Tranche A", "A"));
-        B = address(new Tranche("Tranche B", "B"));
-        S = _S;
-        T1 = _T1;
-        T2 = _T2;
-        T3 = _T3;
-        c = _c;
-        x = _x;
-        cx = _cx;
-        cy = _cy;
+    function initialize (address _Assist) public onlyInitializing {
+
+        SplitRiskV2Assist AssistContract = SplitRiskV2Assist(_Assist);
+        S = AssistContract.S();
+        T1 = AssistContract.T1();
+        T2 = AssistContract.T2();
+        T3 = AssistContract.T3();
+        //USER can create the time for the insurances when it overrides based on the asset
+
+        A = AssistContract.A();
+        B = AssistContract.B();
+        // initialized = true;
     }
 
     function proxiableUUID() public pure returns (bytes32) {
@@ -85,26 +88,12 @@ contract InsuraTranch is Initializable{
     }
 
     function splitRisk(uint256 amount_c) public {
-        require(block.timestamp < S, "split: no longer in issuance period");
-        require(amount_c > 1, "split: amount_c too low");
-
-        if (amount_c % 2 != 0) {
-            // Only accept even denominations
-            amount_c -= 1;
-        }
-
-        require(
-            IERC20(c).transferFrom(msg.sender, address(this), amount_c),
-            "split: failed to transfer c tokens"
-        );//the transferfrom function is not native to a token like c
-
-        ITranche(A).mint(msg.sender, amount_c / 2);
-        ITranche(B).mint(msg.sender, amount_c / 2);
+        AssistContract.splitRisk(amount_c, c);
 
         emit RiskSplit(msg.sender, amount_c);
     }
 
-    function invest() public {
+    function invest() public virtual {
         require(!isInvested, "split: investment was already performed");
         require(block.timestamp >= S, "split: still in issuance period");
         require(block.timestamp < T1, "split: no longer in insurance period");
@@ -115,56 +104,29 @@ contract InsuraTranch is Initializable{
         require(balance_c > 0, "split: no c tokens found");
         totalTranches = ITranche(A).totalSupply() * 2;
 
-        //Invest in both the protocols X and Y
-        investInXandY(balance_c);
+        // Protocol X: Aave
+        cToken.approve(x, balance_c / 2);
+        IAaveLendingpool(x).deposit(c, balance_c / 2, me, 0);
+
+        // Protocol Y: Compound
+        cToken.approve(cy, balance_c/2);
+        require(
+            IcDAI(cy).mint(balance_c / 2) == 0,
+            "split: error while minting cDai"
+        );
 
         isInvested = true;
         emit Invest(balance_c, IERC20(cx).balanceOf(me), IERC20(cy).balanceOf(me), 0);
     }
 
-    function investInXandY (uint256 balance_c) internal virtual{
-        // Protocol X: Aave
-        IERC20(c).approve(x, balance_c);
-        IAaveLendingpool(x).deposit(c, balance_c, address(this), 0);
-
-        // Protocol Y: Compound
-        IERC20(c).approve(cy, balance_c);
-        IcDAI(cy).mint(balance_c);
-    }
-
-    function divest() public {
+    /// @notice Attempt to withdraw all funds from Aave and Compound.
+    ///         Then calculate the redeem ratios, or enter fallback mode
+    /// @dev    Should be incentivized for the first successful call
+    function divest() public virtual{
         // Should be incentivized on the first successful call
         require(block.timestamp >= T1, "split: still in insurance period");
         require(block.timestamp < T2, "split: already in claim period");
-        IERC20 cToken  = IERC20(c);
-        
-        uint256 [4] memory arr = divestFromXandY();
-        uint256 interest = arr[0];
-        uint256 halfOfTranches = arr[1];
-        uint256 balance_cx = arr[2];
-        uint256 balance_cy = arr[3];
 
-        // Determine payouts
-        inLiquidMode = true;
-        uint256 balance_c = cToken.balanceOf(address(this));
-        if (balance_c >= totalTranches) {
-            // No losses, equal split of all c among A/B shares
-            cPayoutA = RAY * balance_c / totalTranches;
-            cPayoutB = cPayoutA;
-        } else if (balance_c > halfOfTranches) {
-            // Balance covers at least the investment of all A shares
-            cPayoutA = RAY * interest / halfOfTranches + RAY; // A tranches fully covered and receive all interest
-            cPayoutB = RAY * (balance_c - halfOfTranches - interest) / halfOfTranches;
-        } else {
-            // Greater or equal than 50% loss
-            cPayoutA = RAY * balance_c / halfOfTranches; // Divide recovered assets among A
-            cPayoutB = 0; // Not enough to cover B
-        }//is inliquidmode, and there will be different cases, of losses or so, and this will be able to set the payouts
-
-        emit Divest(balance_c, balance_cx, balance_cy, 0);
-    }
-
-    function divestFromXandY() internal virtual returns(uint256 [4] memory){
         IERC20 cToken  = IERC20(c);
         IERC20 cxToken = IERC20(cx);
         IcDAI  cyToken = IcDAI(cy);
@@ -196,8 +158,16 @@ contract InsuraTranch is Initializable{
 
         require(cxToken.balanceOf(me) == 0 && cyToken.balanceOf(me) == 0, "split: Error while redeeming tokens");
 
-        return [interest, halfOfTranches, balance_cx, balance_cy];
-        
+        // Determine payouts
+        inLiquidMode = true;
+        balance_c = cToken.balanceOf(me);
+
+        //to export the math to the assist contract
+        uint256 [2] memory cPayouts = AssistContract.divestMath(balance_c, totalTranches, interest);
+        cPayoutA = cPayouts[0];
+        cPayoutB = cPayouts[1];
+
+        emit Divest(balance_c, balance_cx, balance_cy, 0);
     }
 
     function claimA(uint256 tranches_to_cx, uint256 tranches_to_cy) public {
@@ -228,7 +198,7 @@ contract InsuraTranch is Initializable{
         _claimFallback(tranches_to_cx, tranches_to_cy, B);
     }
 
-    function _claimFallback(uint256 tranches_to_cx, uint256 tranches_to_cy, address trancheAddress) internal {
+    function _claimFallback(uint256 tranches_to_cx, uint256 tranches_to_cy, address trancheAddress) internal{
         require(tranches_to_cx > 0 || tranches_to_cy > 0, "split: to_cx or to_cy must be greater than zero");
 
         ITranche tranche = ITranche(trancheAddress);
@@ -242,19 +212,9 @@ contract InsuraTranch is Initializable{
             amount_B = tranches_to_cx + tranches_to_cy;
         }
 
-        uint256[2] memory arr = _payoutsFallback(tranches_to_cx, tranches_to_cy, trancheAddress);
-
-        emit Claim(msg.sender, amount_A, amount_B, 0, arr[0], arr[1]);
-    }
-    function _payoutsFallback(uint256 tranches_to_cx,  uint256 tranches_to_cy, address trancheAddress) internal virtual returns (uint256 [2]memory ){
-        
-        //the need to make this function as overriden is because of the case the existence of transfer function 
-        //and maybe the declaration of the wrapped tokens to be IERC20 or so...
-        
         // Payouts
         uint256 payout_cx;
         uint256 payout_cy;
-        ITranche tranche = ITranche(trancheAddress);
         if (tranches_to_cx > 0) {
             IERC20 cxToken = IERC20(cx);
 
@@ -281,7 +241,7 @@ contract InsuraTranch is Initializable{
             cyToken.transfer(msg.sender, payout_cy);
         }
 
-        return [payout_cx, payout_cy];
+        emit Claim(msg.sender, amount_A, amount_B, 0, payout_cx, payout_cy);
     }
 
     /// @notice Redeem **all** owned A- and B-tranches for Dai
@@ -293,6 +253,10 @@ contract InsuraTranch is Initializable{
         claim(balance_A, balance_B);
     }
 
+    /// @notice Redeem A- and B-tranches for Dai
+    /// @dev    Only available in liquid mode
+    /// @param  amount_A The amount of A-tranches that will be redeemed for Dai
+    /// @param  amount_B The amount of B-tranches that will be redeemed for Dai
     function claim(uint256 amount_A, uint256 amount_B) public {
         if (!inLiquidMode) {
             if(!isInvested && block.timestamp >= T1) {
