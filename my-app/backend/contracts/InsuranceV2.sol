@@ -47,7 +47,7 @@ contract SplitInsuranceV2 is Initializable{
     uint256 public T2;
     uint256 public T3;
 
-    // bool initialized = false;
+    bool initialized = false;
 
     /* State tracking */
     uint256 public totalTranches; // Total A + B tokens
@@ -69,18 +69,19 @@ contract SplitInsuranceV2 is Initializable{
     event Claim(address indexed claimant, uint256 amount_A, uint256 amount_B, uint256 amount_c, uint256 amount_cx, uint256 amount_cy);
 
 
-    function initialize (address _Assist) public onlyInitializing {
+    function initialize (address _Assist) public initializer{
+        if(!initialized){
+            SplitRiskV2Assist AssistContract = SplitRiskV2Assist(_Assist);
+            S = AssistContract.S();
+            T1 = AssistContract.T1();
+            T2 = AssistContract.T2();
+            T3 = AssistContract.T3();
+            //USER can create the time for the insurances when it overrides based on the asset
 
-        SplitRiskV2Assist AssistContract = SplitRiskV2Assist(_Assist);
-        S = AssistContract.S();
-        T1 = AssistContract.T1();
-        T2 = AssistContract.T2();
-        T3 = AssistContract.T3();
-        //USER can create the time for the insurances when it overrides based on the asset
-
-        A = AssistContract.A();
-        B = AssistContract.B();
-        // initialized = true;
+            A = AssistContract.A();
+            B = AssistContract.B();
+            initialized = true;
+        }
     }
 
     function proxiableUUID() public pure returns (bytes32) {

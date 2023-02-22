@@ -3,7 +3,7 @@ require("dotenv").config({ path: ".env" });
 const {utils} = require("web3")
 
 async function main() {
-  const hash = utils.sha3('initialize (uint256 _S, uint256 _T1,  uint256 _T2, uint256 _T3, address _c, address _x, address _cx, address _cy)').substr(0,10);
+  const hash = utils.sha3('initialize(address _Assist)').substr(0,10);
   console.log(hash)
   // const hash = utils.sha3('initialize (uint256 _S, uint256 _T1,  uint256 _T2, uint256 _T3, address _c, address _x, address _cx, address _cy)').substr(0,10)
   
@@ -30,23 +30,23 @@ async function main() {
     }
   ]
   
-  // const InsuraTranchContract = await ethers.getContractFactory(
-  //   "SplitInsuranceV2"
-  // );
+  const InsuraTranchContract = await ethers.getContractFactory(
+    "SplitInsuranceV2"
+  );
 
-  // // deploy the contract
-  // const deployedInsuraTranchContract = await InsuraTranchContract.deploy({gasLimit: 30000000});
+  // deploy the contract
+  const deployedInsuraTranchContract = await InsuraTranchContract.deploy({gasLimit: 30000000});
 
-  // await deployedInsuraTranchContract.deployed();
-  // // print the address of the deployed contract
-  // console.log(
-  //   "Implementation Contract Address:",
-  //   deployedInsuraTranchContract.address
-  // );
+  await deployedInsuraTranchContract.deployed();
+  // print the address of the deployed contract
+  console.log(
+    "Implementation Contract Address:",
+    deployedInsuraTranchContract.address
+  );
 
   const proxy = await ethers.getContractFactory("Proxy");
   console.log("got proxy")
-  const deployedProxy = await proxy.deploy(hash, "0xA3f7BF5b0fa93176c260BBa57ceE85525De2BaF4", {
+  const deployedProxy = await proxy.deploy(hash, deployedInsuraTranchContract.address, {
     gasLimit: 30000000,
   });
   console.log("deployed proxy")
