@@ -27,7 +27,7 @@ contract SplitInsuranceV2 is Initializable{
     address public A; // Tranche A token contract
     address public B; // Tranche A token contract
 
-    SplitRiskV2Assist AssistContract;
+    SplitRiskV2Assist public AssistContract;
 
     address public  c = 0x6B175474E89094C44Da98b954EedeAC495271d0F; // Maker DAI token
     address public  x = 0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9; // Aave v2 lending pool
@@ -69,19 +69,16 @@ contract SplitInsuranceV2 is Initializable{
     event Claim(address indexed claimant, uint256 amount_A, uint256 amount_B, uint256 amount_c, uint256 amount_cx, uint256 amount_cy);
 
 
-    function initialize (address _Assist) public initializer{
-        if(!initialized){
-            SplitRiskV2Assist AssistContract = SplitRiskV2Assist(_Assist);
-            S = AssistContract.S();
-            T1 = AssistContract.T1();
-            T2 = AssistContract.T2();
-            T3 = AssistContract.T3();
-            //USER can create the time for the insurances when it overrides based on the asset
+    function initialize (address _Assist) public initializer {
+        SplitRiskV2Assist AssistContract = SplitRiskV2Assist(_Assist);
+        S = AssistContract.S();
+        T1 = AssistContract.T1();
+        T2 = AssistContract.T2();
+        T3 = AssistContract.T3();
+        //USER can create the time for the insurances when it overrides based on the asset
 
-            A = AssistContract.A();
-            B = AssistContract.B();
-            initialized = true;
-        }
+        A = AssistContract.A();
+        B = AssistContract.B();
     }
 
     function proxiableUUID() public pure returns (bytes32) {
@@ -254,10 +251,6 @@ contract SplitInsuranceV2 is Initializable{
         claim(balance_A, balance_B);
     }
 
-    /// @notice Redeem A- and B-tranches for Dai
-    /// @dev    Only available in liquid mode
-    /// @param  amount_A The amount of A-tranches that will be redeemed for Dai
-    /// @param  amount_B The amount of B-tranches that will be redeemed for Dai
     function claim(uint256 amount_A, uint256 amount_B) public {
         if (!inLiquidMode) {
             if(!isInvested && block.timestamp >= T1) {
@@ -298,3 +291,8 @@ contract SplitInsuranceV2 is Initializable{
     }
 
 }
+
+/**
+ * 
+ * constructor(_logic, admin_, _data), logice = implem addr, owner of proxy, data = calldata of init function
+ */

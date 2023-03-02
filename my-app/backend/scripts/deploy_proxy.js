@@ -1,35 +1,16 @@
+const { Interface } = require("ethers/lib/utils");
 const { ethers } = require("hardhat");
 require("dotenv").config({ path: ".env" });
 const {utils} = require("web3")
 
 async function main() {
-  const hash = utils.sha3('initialize(address _Assist)').substr(0,10);
-  console.log(hash)
-  // const hash = utils.sha3('initialize (uint256 _S, uint256 _T1,  uint256 _T2, uint256 _T3, address _c, address _x, address _cx, address _cy)').substr(0,10)
-  
-  const proxyAbi = [
-    {
-      "inputs": [
-        {
-          "internalType": "bytes",
-          "name": "constructData",
-          "type": "bytes"
-        },
-        {
-          "internalType": "address",
-          "name": "contractLogic",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "stateMutability": "payable",
-      "type": "fallback"
-    }
-  ]
-  
+
+  const AssistContract = await ethers.getContractFactory("SplitRiskV2Assist");
+  const deployedAssistContract = await AssistContract.deploy({gasLimit: 30000000});
+  await deployedAssistContract.deployed();
+
+  console.log("Assist Contract Address:", deployedAssistContract.address);
+
   const InsuraTranchContract = await ethers.getContractFactory(
     "SplitInsuranceV2"
   );
@@ -44,24 +25,21 @@ async function main() {
     deployedInsuraTranchContract.address
   );
 
+  const impIface = new Interface([
+    "function initialize(address _Assist)"
+  ])
+  const calldata = impIface.encodeFunctionData("initialize", [deployedAssistContract.address])//pass array of inputs to iface.encodeFunctionData
+  //pass array of inputs to iface.encodeFunctionData
+
   const proxy = await ethers.getContractFactory("Proxy");
   console.log("got proxy")
-  const deployedProxy = await proxy.deploy(hash, deployedInsuraTranchContract.address, {
+  const deployedProxy = await proxy.deploy(calldata, deployedInsuraTranchContract.address, {
     gasLimit: 30000000,
   });
   console.log("deployed proxy")
   await deployedProxy.deployed();
   console.log("Proxy Contract Address: ", deployedProxy.address);
-  //deployed proxy contract
-
-  //now to initiailize the proxy contract
-  // const provider = new ethers.providers.JsonRpcProvider("http://localhost:8545");
-  // const signer = provider.getSigner();
-  // const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-  // const proxyContract = new ethers.Contract(deployedProxy.address, proxyAbi, wallet);
-  // const tx2 = await proxyContract.initialize();
-  // await tx2.wait();
-  // console.log("Proxy Contract Initialized");
+  console.log("deployed proxy contract")
 }
 
 main()
@@ -70,3 +48,5 @@ main()
     console.error(error);
     process.exit(1);
   });
+
+  ///TransparentUpgradeableProxy use this to deploy the proxy contract, then use the proxy contract to deploy the implementation contract
