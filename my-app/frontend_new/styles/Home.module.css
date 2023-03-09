@@ -224,6 +224,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  /* background-image: linear-gradient(180deg, #f1ecec 0%, #511b0c 99%, #5a1603 100%); */
+  color: rgb(46, 26, 26);
 }
 
 .splitRisk {
@@ -236,6 +238,23 @@
   border-width: 1px;
   border-color: rgb(128, 11, 11);
   border-style: groove;
+}
+
+.footerContent{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.footerSocials{
+  text-align: left;
+  color: white;
+}
+
+.footerDescription{
+  text-align: right;
+  color: white;
 }
 
 .content{
@@ -306,9 +325,10 @@
   display: flex;
   flex: 1;
   padding: 2rem 0;
-  border-top: 1px solid #eaeaea;
   justify-content: center;
   align-items: center;
+  /* border-color: #511b0c;
+  background-image: linear-gradient(180deg, #511b0c 0%, #511b0c 99%, #000000 100%); */
 }
 
 .footer a {

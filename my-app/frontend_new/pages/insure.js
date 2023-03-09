@@ -6,7 +6,7 @@ import { BigNumber, providers, ethers, Contract, utils} from "ethers";
 import Web3Modal from "web3modal";
 import {Addr, Abi, TrancheAbi, daiAbi} from "../constants_stageone";
 import Footer from "../components/Footer";
-const moment = require('moment')
+
 // const web3 = require('web3')
 
 
@@ -30,12 +30,15 @@ export default function Home(signerInput) {
   const [inLiquidMode, setInLiquidMode] = useState(false);
   const [userABalance, setUserABalance] = useState(zero);
   const [userBBalance, setUserBBalance] = useState(zero);
+  const [screen, setScreen] = useState(null)
 
   useEffect( () => {
     if (signerInput) {
         setSigner(signerInput.prop1);
         if(signer){
+          console.log("about to get times")
           getTimes();
+          console.log("got times")
           updateBlockTimestamp();//need to see if this is necessary
           getUserTrancheBalance();
         }
@@ -53,13 +56,19 @@ export default function Home(signerInput) {
     )
   }
 
+  useEffect( () => {
+    setScreen(Screen());
+    console.log("screen updated")
+  }, [blockTimeStamp])
+
   const getTimes = async () =>{
     //to be run only once 
     const contract = new Contract(Addr, Abi, signer);
     console.log("get times entered",signer)
-    let s = (await contract.S())
+    console.log(contract)
+    let s = await contract.S();
     console.log("S is ", s)
-    setS(s)
+    setS(s.toString())
     setTOne((await contract.T1()));
     setTTwo((await contract.T2()));
     setTThree((await contract.T3()));
@@ -71,7 +80,7 @@ export default function Home(signerInput) {
     const dai = new Contract("0x6b175474e89094c44da98b954eedeac495271d0f", daiAbi, signer);
     const tx2 = await dai.approve(Addr, valueBN);
     const tx = await contract.splitRiskInvestmentPeriod(valueBN, {
-      gasLimit: 3000000,
+      gasLimit: 10000000,
     });
     await tx.wait()
 
@@ -90,8 +99,9 @@ export default function Home(signerInput) {
 
   const updateBlockTimestamp = async () =>{
     // const provider = new ethers.providers.InfuraProvider("https://eth-mainnet.g.alchemy.com/v2/1jL4KovovKlEyn-QtmIhBAFbarVNUd_M");
-
+    console.log("signer is ", signer)
     if(signer){
+      console.log("timestamp update hoga")
       signerInput.prop2.getBlock('latest').then((block)=>{
         const t = (block.timestamp)
         setBlockTimeStamp(t)
@@ -125,7 +135,9 @@ export default function Home(signerInput) {
 
   const claimInLiquidmode = async () =>{
     const contract = new Contract(Addr, Abi, signer);
-    const tx = await contract.claimAll()
+    const tx = await contract.claimAll({
+      gasLimit: 3000000,
+    })
     await tx.wait(); 
   }
 
@@ -135,9 +147,13 @@ export default function Home(signerInput) {
     const BfromAAVEBN = utils.parseUnits(BfromAAVE.toString(), 18);
     const AfromCompoundBN = utils.parseUnits(AfromCompound.toString(), 18);
     const BfromCompoundBN = utils.parseUnits(BfromCompound.toString(), 18);
-    let tx = await contract.claimA(AfromAAVEBN, AfromCompoundBN);
+    let tx = await contract.claimA(AfromAAVEBN, AfromCompoundBN, {
+      gasLimit: 3000000,
+      });
     await tx.wait();
-    await contract.claimB(BfromAAVEBN, BfromCompoundBN);
+    await contract.claimB(BfromAAVEBN, BfromCompoundBN, {
+      gasLimit: 3000000,
+    });
     await tx.wait();
   }
 
@@ -152,8 +168,8 @@ export default function Home(signerInput) {
   const Balances = () =>{
     return (
       <div className={styles.balances}>
-        <h3>Tranche A Balance: {utils.formatUnits(userABalance.toString(), 18)}</h3>
-        <h3>Tranche B Balance: {utils.formatUnits(userBBalance.toString(), 18)}</h3>
+        <h3>Tranche SafeBet Balance: {utils.formatUnits(userABalance.toString(), 18)}</h3>
+        <h3>Tranche BearerOfAll Balance: {utils.formatUnits(userBBalance.toString(), 18)}</h3>
       </div>
     )
   }
@@ -212,7 +228,7 @@ export default function Home(signerInput) {
       <h4><br/> The investment period is ongoing, you will be able to withdraw your tranche tokens after this observation period.</h4>
       <h4>Tranche tokens are the tokens that represent your share of the pooled DAI tokens</h4>
       </div>
-      
+      <Balances/>
       <br/>
       <div>
         <div className = {styles.center}>
@@ -220,7 +236,6 @@ export default function Home(signerInput) {
         <h3>Observing the Investments</h3>
         <div className = {styles.investments}></div>
       </div>
-      <br/>
       <br/>
       <div>
         <div className={styles.center}>
@@ -283,12 +298,15 @@ export default function Home(signerInput) {
         <h2>Claim your tranche tokens and convert them into DAI</h2>
         <div>
           <div className={styles.threeDiv}>
-          <h3>You have {userABalance.toString()} SafeBet tranche tokens</h3>
-          <h3>You have {userBBalance.toString()} BearerOfAll tranche tokens</h3>
+          <h3>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>
+          <h3>You have {utils.formatUnits(userBBalance.toString(),18)} BearerOfAll tranche tokens</h3>
         </div>
         <div className={styles.three}>
-          <h3>Claim the DAI tokens that you are entitled to!</h3>  
-          <button onClick={()=>(claimInLiquidmode())}>Claim!</button>
+          <h3>Claim the DAI tokens that you are entitled to!</h3>
+          <div className={styles.center}>
+            <button className = {styles.mybutton}onClick={()=>(claimInLiquidmode())}>Claim!</button>
+          </div>  
+          
         </div>
         </div>
         
@@ -309,7 +327,7 @@ export default function Home(signerInput) {
         <div >
           <br/>
           <div className={styles.center}>
-          <h3>You have {userABalance.toString()} A tranche tokens</h3>      
+          <h3>You have {utils.formatUnits(userABalance.toString(),18)} A tranche tokens</h3>      
           </div>
 
           <br/>
@@ -370,7 +388,7 @@ export default function Home(signerInput) {
           <h2> Claim your SafeBet tranche tokens</h2>
 
           <div className={styles.leftdiv}>
-          <h3>You have {userABalance.toString()} SafeBet tranche tokens</h3>
+          <h3>You have {utils.formatUnits(userABalance.toString(),18)} SafeBet tranche tokens</h3>
           <div>
             How much of your SafeBet tranche tokens do you want to redeem from AAVE?
             <br/>
@@ -387,7 +405,7 @@ export default function Home(signerInput) {
           <h2>Claim your BearerOfAll tranche tokens</h2>
 
           <div className={styles.leftdiv}>
-          <h3>You have {userABalance.toString()} BearerOfAll tranche tokens</h3>
+          <h3>You have {utils.formatUnits(userBBalance.toString())} BearerOfAll tranche tokens</h3>
           <div>
             How much of your BearerOfAll tranche tokens do you want to redeem from AAVE?
             <br></br>
@@ -413,12 +431,14 @@ export default function Home(signerInput) {
   }
   const Screen = () => {
     if (blockTimeStamp < S){
+      console.log("less than S")
       return(
         <SScreen/>
       )
     }
     //get aDAI and cDAI balance
     else if (blockTimeStamp < tOne){
+      console.log("difference shud be +",S )
       return(
         <TOne/>
         // <SScreen/>
@@ -465,7 +485,8 @@ export default function Home(signerInput) {
         <div>
           <Screen/>
           {blockTimeStamp} is blocktimestamp
-          {S.toString()} is S
+          {}
+          {S?S.toString():S} is S
           {tOne.toString()} is tone
           {tTwo.toString()} is ttwo
           {tThree.toString()} is t three

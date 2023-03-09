@@ -5,7 +5,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 import "../styles/globals.css";
 import {useRef, useEffect, useState, React} from "react"
 import Web3Modal from "web3modal"
-// import { ethers, providers } from "ethers";
+import {ethers} from "ethers";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
@@ -42,7 +42,8 @@ function MyApp({ Component, pageProps }) {
 
     const getProviderOrSigner = async (needSigner = false) => {
         const provider = await web3ModalRef.current.connect();
-        const web3Provider = new providers.Web3Provider(provider);
+        console.log("sdfsdf",ethers.providers)
+        const web3Provider = new ethers.providers.Web3Provider(provider);
         setWeb3provider(web3Provider);
     
         const { chainId } = await web3Provider.getNetwork();

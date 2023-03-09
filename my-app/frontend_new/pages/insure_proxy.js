@@ -2,11 +2,12 @@ import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import {useRef, useEffect, useState, React} from "react"
-import { BigNumber, providers, ethers, Contract, utils} from "ethers";
+import { BigNumber, providers, Contract, utils, ethers} from "ethers";
 import Web3Modal from "web3modal";
-import {Addr, Abi, TrancheAbi, daiAbi} from "../constants_stageone";
+import {proxyAddr, implementationAddr, assistAddr, proxyAbi, implementationAbi, TrancheAbi, daiAbi, assistAbi} from "../constants";
+
 import Footer from "../components/Footer";
-const moment = require('moment')
+
 // const web3 = require('web3')
 
 
@@ -17,7 +18,7 @@ export default function Home(signerInput) {
   let BfromAAVE = 0;
   let BfromCompound = 0;
   let amountOfDAI = 0;
-  let amountOfDai_dash = 0;
+  let amountOfDAI_dash = 0;
   const [signer, setSigner] = useState(null);
   const [walletConnected, setWalletConnected] = useState(false)
   const zero = BigNumber.from("0")
@@ -30,11 +31,14 @@ export default function Home(signerInput) {
   const [inLiquidMode, setInLiquidMode] = useState(false);
   const [userABalance, setUserABalance] = useState(zero);
   const [userBBalance, setUserBBalance] = useState(zero);
+  const [cBalance, setCBalance] = useState(zero);
 
   useEffect( () => {
     if (signerInput) {
+      console.log("signers",signerInput)
         setSigner(signerInput.prop1);
         if(signer){
+          console.log("Signer is ", signer)
           getTimes();
           updateBlockTimestamp();//need to see if this is necessary
           getUserTrancheBalance();
@@ -55,8 +59,10 @@ export default function Home(signerInput) {
 
   const getTimes = async () =>{
     //to be run only once 
-    const contract = new Contract(Addr, Abi, signer);
-    console.log("get times entered",signer)
+    const contract = new ethers.Contract(proxyAddr, implementationAbi, signer);
+    console.log(contract)
+    // const contract = new ethers.Contract("SplitInsuranceV2", proxyAddr, signer);
+    console.log("Contract is", contract)
     let s = (await contract.S())
     console.log("S is ", s)
     setS(s)
@@ -66,26 +72,39 @@ export default function Home(signerInput) {
   }
   
   const mintForDAI_dash = async(value) => {
-    const contract = new Contract(Addr, Abi, signer);
+    console.log("entered")
+    const contract = new Contract(proxyAddr, implementationAbi, signer);
     const valueBN = utils.parseUnits(value, 18);
     const dai = new Contract("0x6b175474e89094c44da98b954eedeac495271d0f", daiAbi, signer);
-    const tx2 = await dai.approve(Addr, valueBN);
+    console.log("assist contract is ",await contract.AssistContract())
+    const tx2 = await dai.approve(await contract.AssistContract(), valueBN);
     const tx = await contract.splitRiskInvestmentPeriod(valueBN, {
-      gasLimit: 3000000,
+      gasLimit: 1000000,
     });
     await tx.wait()
 
   }
 
   const mintForDAI = async (value) => {
-    const contract = new Contract(Addr, Abi, signer);
+    const contract = new ethers.Contract(proxyAddr, implementationAbi, signer);
     const valueBN = utils.parseUnits(value, 18);
     const dai = new Contract("0x6b175474e89094c44da98b954eedeac495271d0f", daiAbi, signer);
-    const tx2 = await dai.approve(Addr, valueBN);
+    const tx3 = await dai.approve(await contract.AssistContract(), valueBN);
+    await tx3.wait();
+    console.log("first approve")
+    //idhar tak theek hai 
+    const assist = new Contract(await contract.AssistContract(), assistAbi, signer);
+    console.log("value of c in assists contract is",await assist.c())
     const tx = await contract.splitRisk(valueBN, {
-      gasLimit: 1000000,
+      gasLimit: 30000000,
     });
-    await tx.wait()
+    console.log("idk")
+    await tx.wait();
+    console.log(contract)
+    const implementation = new Contract(implementationAddr, implementationAbi, signer)
+    console.log("value of c in actual", await implementation.c())
+    console.log("value of c in assists contract is",await assist.c())
+    await updateCBalance();
   }
 
   const updateBlockTimestamp = async () =>{
@@ -96,9 +115,8 @@ export default function Home(signerInput) {
         const t = (block.timestamp)
         setBlockTimeStamp(t)
       })
-      const contract = new Contract(Addr, Abi, signer);
+      const contract = new ethers.Contract(proxyAddr, implementationAbi, signer);
       const isInvested = (await contract.isInvested())
-      console.log("is invested", isInvested)
       const inLiquidMode = (await contract.inLiquidMode())
       setIsInvested(isInvested)
       setInLiquidMode(inLiquidMode)
@@ -108,7 +126,7 @@ export default function Home(signerInput) {
 
   const getUserTrancheBalance = async () =>{
     const addrUser = (await signer.getAddress())
-    const contract = new Contract(Addr, Abi, signer);
+    const contract = new Contract(proxyAddr, implementationAbi, signer);
     const AtrancheAddr = (await contract.A());
     const BtrancheAddr = (await contract.B());
     const AtrancheContract = new Contract(AtrancheAddr, TrancheAbi, signer);
@@ -121,16 +139,26 @@ export default function Home(signerInput) {
 
   useEffect(()=>{
     updateBlockTimestamp();
+    updateCBalance();
   }, [isInvested, inLiquidMode])
 
+  const updateCBalance = async () =>{
+    const contract = new Contract(proxyAddr, implementationAbi, signer);
+    const cBalance = (await contract.cBalance());
+    setCBalance(cBalance);
+  }
+
   const claimInLiquidmode = async () =>{
-    const contract = new Contract(Addr, Abi, signer);
-    const tx = await contract.claimAll()
+    console.log("claim in liquid mode entered")
+    const contract = new Contract(proxyAddr, implementationAbi, signer);
+    const tx = await contract.claimAll({
+      gasLimit: 1000000,
+    })
     await tx.wait(); 
   }
 
   const claimInFallbackMode = async (AfromAAVE, AfromCompound, BfromAAVE, BfromCompound) =>{
-    const contract = new Contract(Addr, Abi, signer);
+    const contract = new Contract(proxyAddr, implementationAbi, signer);
     const AfromAAVEBN = utils.parseUnits(AfromAAVE.toString(), 18);
     const BfromAAVEBN = utils.parseUnits(BfromAAVE.toString(), 18);
     const AfromCompoundBN = utils.parseUnits(AfromCompound.toString(), 18);
@@ -142,10 +170,12 @@ export default function Home(signerInput) {
   }
 
   const claimInOnlyA = async (AfromAAVE, AfromCompound) =>{
-    const contract = new Contract(Addr, Abi, signer);
+    const contract = new Contract(proxyAddr, implementationAbi, signer);
     const AfromAAVEBN = utils.parseUnits(AfromAAVE.toString(), 18);
     const AfromCompoundBN = utils.parseUnits(AfromCompound.toString(), 18);
-    let tx = await contract.claimA(AfromAAVEBN, AfromCompoundBN);
+    let tx = await contract.claimA(AfromAAVEBN, AfromCompoundBN, {
+      gasLimit: 1000000,
+    });
     await tx.wait();
   }
 
@@ -214,6 +244,7 @@ export default function Home(signerInput) {
       </div>
       
       <br/>
+      <Balances/>
       <div>
         <div className = {styles.center}>
         {/* to add something related to the progress of the wrapped tokens or so */}
@@ -250,13 +281,14 @@ export default function Home(signerInput) {
           </div>
         <div className={styles.center}>
             <input placeholder = "Enter DAI Amount" className = {styles.input} type="number" onChange = {(e)=>{
-              amountOfDai_dash = (e.target.value)
+              amountOfDAI_dash = (e.target.value)
             }}/>
           </div>
             <br/>
           <div className={styles.center}>
             <button className={styles.mybutton} onClick={()=>{
-              mintForDAI_dash(amountOfDai_dash);//redirect to success page
+              console.log("Clicked")
+              mintForDAI_dash(amountOfDAI_dash);//redirect to success page
               }}>Deposit</button>
           </div>
         </div>
@@ -288,7 +320,10 @@ export default function Home(signerInput) {
         </div>
         <div className={styles.three}>
           <h3>Claim the DAI tokens that you are entitled to!</h3>  
-          <button onClick={()=>(claimInLiquidmode())}>Claim!</button>
+          <div className={styles.center}>
+            <button className = {styles.mybutton} onClick={()=>(claimInLiquidmode())}>Claim!</button>
+          </div>
+          
         </div>
         </div>
         
@@ -435,11 +470,16 @@ export default function Home(signerInput) {
       )
     }
     else if (blockTimeStamp > tThree){
-      return(
-        <AboveTThree/>
-        // <TThree/>
-        // <TOne/>
-      )
+      if(inLiquidMode){
+        return <TThree/>
+      }else{
+        return(
+          // <AboveTThree/>
+          <TThree/>
+          // <TOne/>
+        )
+      }
+      
   } else{
     return(
       <div>
@@ -469,6 +509,7 @@ export default function Home(signerInput) {
           {tOne.toString()} is tone
           {tTwo.toString()} is ttwo
           {tThree.toString()} is t three
+          {cBalance.toString()} is C Balance
           <div>
           </div>
         </div>
@@ -476,3 +517,15 @@ export default function Home(signerInput) {
     </div>
   );
 }
+
+/**
+ * 
+ * 1676900795 is blocktimestamp1676900917 is S1676901277 is tone1676901397 is ttwo1676901577 is t three
+ * 
+ * 
+ * Assist Contract Address: 0x0b27a79cb9C0B38eE06Ca3d94DAA68e0Ed17F953
+Implementation Contract Address: 0x7bdd3b028C4796eF0EAf07d11394d0d9d8c24139
+calldata is 0xc4d66de8
+got proxy
+Proxy Contract Address:  0xB468647B04bF657C9ee2de65252037d781eABafD
+ */

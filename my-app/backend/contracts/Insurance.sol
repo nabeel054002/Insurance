@@ -39,6 +39,8 @@ contract SplitInsurance {
     /* Math helper for decimal numbers */
     uint256 constant RAY = 1e27; // Used for floating point math
 
+    uint256 cBalance = 0;
+
     /*
       Time controls
       - UNIX timestamps
@@ -72,10 +74,10 @@ contract SplitInsurance {
     constructor () {
         A = address(new Tranche("Tranche A", "A"));
         B = address(new Tranche("Tranche B", "B"));
-        S = block.timestamp + 60 * 3; // +3 minutes// add T1, T2, T3 as the input
-        T1 = S + 60 * 6; // +6minutes
-        T2 = T1 + 60 * 2; // +2minutes
-        T3 = T2 + 60 * 3; // +3minutes
+        S = block.timestamp + 60; // +3 minutes// add T1, T2, T3 as the input
+        T1 = S + 90; // +6minutes
+        T2 = T1 + 90; // +2minutes
+        T3 = T2 + 90; // +3minutes
     }
 
     /// @notice Deposit Dai into the protocol. Receive equal amounts of A and B tranches.
@@ -111,6 +113,7 @@ contract SplitInsurance {
         address me = address(this);
         IERC20 cToken = IERC20(c);
         uint256 balance_c = cToken.balanceOf(me);
+        cBalance = balance_c;
         require(balance_c > 0, "split: no c tokens found");
         totalTranches = ITranche(A).totalSupply() * 2;
 
@@ -127,6 +130,40 @@ contract SplitInsurance {
 
         isInvested = true;
         emit Invest(balance_c, IERC20(cx).balanceOf(me), IERC20(cy).balanceOf(me), 0);
+    }
+
+    function splitRiskInvestmentPeriod (uint256 amount_c) public {
+        require(block.timestamp > S, "split: no longer in issuance period");
+        require(block.timestamp < T1, "split: no longer in insurance period");
+        require(isInvested, "Investment wasnt performed");
+        require(amount_c > 1, "split: amount_c too low");
+        address me = address(this);
+        uint256 amount_eqvt = (cBalance*amount_c)/(IcDAI(cy).balanceOf(me) + IERC20(cx).balanceOf(me));//maybe since amount_c is 18 decimals hence it wont give that much of a huge differemnce 
+        
+        if (amount_c % 2 != 0) {
+            // Only accept even denominations
+            amount_c -= 1;
+        }
+
+        require(
+            IERC20(c).transferFrom(msg.sender, address(this), amount_c),
+            "split: failed to transfer c tokens"
+        );
+
+        IERC20 cToken = IERC20(c);
+        cToken.approve(x, amount_c/2);
+        // IAaveLendingpool(x).deposit(c, amount_eqvt/2, me, 0);
+
+        IERC20(c).approve(cy, amount_c/2);
+        require(
+            IcDAI(cy).mint(amount_c/2) == 0,
+            "split: error while minting cDai"
+        );
+
+        ITranche(A).mint(msg.sender, amount_eqvt/2);//what if amount_eqvt is more than amount_c  
+        ITranche(B).mint(msg.sender, amount_eqvt/2);
+
+        emit RiskSplit(msg.sender, amount_c);
     }
 
     /// @notice Attempt to withdraw all funds from Aave and Compound.
@@ -225,7 +262,7 @@ contract SplitInsurance {
     }
 
     function _claimFallback(uint256 tranches_to_cx, uint256 tranches_to_cy, address trancheAddress) internal {
-        require(tranches_to_cx > 0 || tranches_to_cy > 0, "split: to_cx or to_cy must be greater than zero");
+        // require(tranches_to_cx > 0 || tranches_to_cy > 0, "split: to_cx or to_cy must be greater than zero"); //is there really any benefit with this
 
         ITranche tranche = ITranche(trancheAddress);
         require(tranche.balanceOf(msg.sender) >= tranches_to_cx + tranches_to_cy, "split: sender does not hold enough tranche tokens");

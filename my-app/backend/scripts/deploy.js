@@ -17,6 +17,7 @@ async function main() {
     "Contract Address:",
     deployedInsuranceContract.address
   );
+  console.log(await deployedInsuranceContract.S());
 }
 
 main()

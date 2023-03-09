@@ -2,9 +2,9 @@ import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import {useRef, useEffect, useState, React} from "react"
-import { BigNumber, providers, ethers, Contract, utils} from "ethers";
+import { BigNumber, providers, Contract, ethers, utils} from "@nomiclabs/hardhat-ethers";
 import Web3Modal from "web3modal";
-import {Addr, Abi, TrancheAbi, daiAbi} from "../constants_stageone";
+import {proxyAddr, assistAddr, proxyAbi, Abi, TrancheAbi, daiAbi, implementationAbi, assistAbi} from "../constants";
 import Footer from "../components/Footer";
 const moment = require('moment')
 // const web3 = require('web3')
@@ -33,8 +33,10 @@ export default function Home(signerInput) {
 
   useEffect( () => {
     if (signerInput) {
+      console.log("signers",signerInput)
         setSigner(signerInput.prop1);
         if(signer){
+          console.log("Signer is ", signer)
           getTimes();
           updateBlockTimestamp();//need to see if this is necessary
           getUserTrancheBalance();
@@ -55,8 +57,9 @@ export default function Home(signerInput) {
 
   const getTimes = async () =>{
     //to be run only once 
-    const contract = new Contract(Addr, Abi, signer);
-    console.log("get times entered",signer)
+    console.log("Signers", signer)
+    const contract = await ethers.getContractAt("SplitInsuranceV2", proxyAddr, signer);
+    console.log("Contract is",contract)
     let s = (await contract.S())
     console.log("S is ", s)
     setS(s)
@@ -66,19 +69,19 @@ export default function Home(signerInput) {
   }
   
   const mintForDAI_dash = async(value) => {
-    const contract = new Contract(Addr, Abi, signer);
+    const contract = new Contract(proxyAddr, proxyAbi, signer);
     const valueBN = utils.parseUnits(value, 18);
     const dai = new Contract("0x6b175474e89094c44da98b954eedeac495271d0f", daiAbi, signer);
     const tx2 = await dai.approve(Addr, valueBN);
     const tx = await contract.splitRiskInvestmentPeriod(valueBN, {
-      gasLimit: 3000000,
+      gasLimit: 1000000,
     });
     await tx.wait()
 
   }
 
   const mintForDAI = async (value) => {
-    const contract = new Contract(Addr, Abi, signer);
+    const contract = await ethers.getContractAt("SplitInsuranceV2", proxyAddr, signer);
     const valueBN = utils.parseUnits(value, 18);
     const dai = new Contract("0x6b175474e89094c44da98b954eedeac495271d0f", daiAbi, signer);
     const tx2 = await dai.approve(Addr, valueBN);
@@ -96,9 +99,8 @@ export default function Home(signerInput) {
         const t = (block.timestamp)
         setBlockTimeStamp(t)
       })
-      const contract = new Contract(Addr, Abi, signer);
+      const contract = await ethers.getContractAt("SplitInsuranceV2", proxyAddr, signer);
       const isInvested = (await contract.isInvested())
-      console.log("is invested", isInvested)
       const inLiquidMode = (await contract.inLiquidMode())
       setIsInvested(isInvested)
       setInLiquidMode(inLiquidMode)
@@ -108,7 +110,7 @@ export default function Home(signerInput) {
 
   const getUserTrancheBalance = async () =>{
     const addrUser = (await signer.getAddress())
-    const contract = new Contract(Addr, Abi, signer);
+    const contract = new Contract(proxyAddr, implementationAbi, signer);
     const AtrancheAddr = (await contract.A());
     const BtrancheAddr = (await contract.B());
     const AtrancheContract = new Contract(AtrancheAddr, TrancheAbi, signer);
@@ -124,13 +126,13 @@ export default function Home(signerInput) {
   }, [isInvested, inLiquidMode])
 
   const claimInLiquidmode = async () =>{
-    const contract = new Contract(Addr, Abi, signer);
+    const contract = new Contract(proxyAddr, proxyAbi, signer);
     const tx = await contract.claimAll()
     await tx.wait(); 
   }
 
   const claimInFallbackMode = async (AfromAAVE, AfromCompound, BfromAAVE, BfromCompound) =>{
-    const contract = new Contract(Addr, Abi, signer);
+    const contract = new Contract(proxyAddr, proxyAbi, signer);
     const AfromAAVEBN = utils.parseUnits(AfromAAVE.toString(), 18);
     const BfromAAVEBN = utils.parseUnits(BfromAAVE.toString(), 18);
     const AfromCompoundBN = utils.parseUnits(AfromCompound.toString(), 18);
@@ -142,7 +144,7 @@ export default function Home(signerInput) {
   }
 
   const claimInOnlyA = async (AfromAAVE, AfromCompound) =>{
-    const contract = new Contract(Addr, Abi, signer);
+    const contract = new Contract(proxyAddr, proxyAbi, signer);
     const AfromAAVEBN = utils.parseUnits(AfromAAVE.toString(), 18);
     const AfromCompoundBN = utils.parseUnits(AfromCompound.toString(), 18);
     let tx = await contract.claimA(AfromAAVEBN, AfromCompoundBN);
@@ -256,7 +258,7 @@ export default function Home(signerInput) {
             <br/>
           <div className={styles.center}>
             <button className={styles.mybutton} onClick={()=>{
-              mintForDAI_dash(amountOfDai_dash);//redirect to success page
+              mintForDAI_dash(amountOfDAI_dash);//redirect to success page
               }}>Deposit</button>
           </div>
         </div>
@@ -384,7 +386,7 @@ export default function Home(signerInput) {
           </div>
         </div>
         <div className={styles.right}>
-          <h2>Claim your BearerOfAll tranche tokens</h2>
+          <h2>Claim your B tranche tokens</h2>
 
           <div className={styles.leftdiv}>
           <h3>You have {userABalance.toString()} BearerOfAll tranche tokens</h3>
@@ -436,9 +438,9 @@ export default function Home(signerInput) {
     }
     else if (blockTimeStamp > tThree){
       return(
-        <AboveTThree/>
+        // <AboveTThree/>
         // <TThree/>
-        // <TOne/>
+        <TOne/>
       )
   } else{
     return(
@@ -469,6 +471,7 @@ export default function Home(signerInput) {
           {tOne.toString()} is tone
           {tTwo.toString()} is ttwo
           {tThree.toString()} is t three
+          Your mom
           <div>
           </div>
         </div>
@@ -476,3 +479,9 @@ export default function Home(signerInput) {
     </div>
   );
 }
+
+/**
+ * 
+ * 1676900795 is blocktimestamp1676900917 is S1676901277 is tone1676901397 is ttwo1676901577 is t three
+ * 
+ */

@@ -24,30 +24,39 @@ interface IcDAI is IERC20 {
 
 contract SplitInsuranceV2 is Initializable{
     /* Internal and external contract addresses  */
-    address public A; // Tranche A token contract
-    address public B; // Tranche A token contract
+    // address public A; // Tranche A token contract
+    // address public B; // Tranche A token contract
 
     SplitRiskV2Assist public AssistContract;
 
-    address public  c = 0x6B175474E89094C44Da98b954EedeAC495271d0F; // Maker DAI token
-    address public  x = 0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9; // Aave v2 lending pool
-    address public cx = 0x028171bCA77440897B824Ca71D1c56caC55b68A3; // Aave v2 interest bearing DAI (aDAI)
-    address public cy = 0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643; // Compound interest bearing DAI (cDAI)
+    uint256 public cBalance;
 
     /* Math helper for decimal numbers */
-    uint256 constant RAY = 1e27; // Used for floating point math
+    uint256 RAY; // Used for floating point math
+
+    address public me;
 
     /*
       Time controls
       - UNIX timestamps
       - Can be defined globally (here) or relative to deployment time (constructor)
     */
+
+    address public c;
+    address public x;
+    address public cx;
+    address public cy;
+
+    address public A;
+    address public B;
+
     uint256 public S;
     uint256 public T1;
     uint256 public T2;
     uint256 public T3;
 
-    bool initialized = false;
+    bool public initialized = false;
+    address public assistContracAddr;
 
     /* State tracking */
     uint256 public totalTranches; // Total A + B tokens
@@ -70,7 +79,9 @@ contract SplitInsuranceV2 is Initializable{
 
 
     function initialize (address _Assist) public initializer {
-        SplitRiskV2Assist AssistContract = SplitRiskV2Assist(_Assist);
+        initialized = true;
+        assistContracAddr = _Assist;
+        AssistContract = SplitRiskV2Assist(_Assist);
         S = AssistContract.S();
         T1 = AssistContract.T1();
         T2 = AssistContract.T2();
@@ -79,7 +90,19 @@ contract SplitInsuranceV2 is Initializable{
 
         A = AssistContract.A();
         B = AssistContract.B();
+
+        c = AssistContract.c();//0x6B175474E89094C44Da98b954EedeAC495271d0F; // Maker DAI token
+        x = 0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9; // Aave v2 lending pool 
+        cx = AssistContract.cx();//0x028171bCA77440897B824Ca71D1c56caC55b68A3; // Aave v2 interest bearing DAI (aDAI)  
+        cy = AssistContract.cy(); //0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643; // Compound interest bearing DAI (cDAI) 
+
+        me = address(this);
+
+        RAY = 1e27;
+
+        cBalance = 0;
     }
+
 
     function proxiableUUID() public pure returns (bytes32) {
         return 0xc5f16f0fcc639fa48a6947836d9850f504798523bf8c9a3a87d5876cf622bcf7;
@@ -87,8 +110,18 @@ contract SplitInsuranceV2 is Initializable{
 
     function splitRisk(uint256 amount_c) public {
         AssistContract.splitRisk(amount_c, c);
-
+        cBalance +=amount_c;
         emit RiskSplit(msg.sender, amount_c);
+    }
+
+    function splitRiskInvestmentPeriod (uint256 amount_c) public virtual{
+
+        //get equivalent balance to be invested 
+        uint256 interestDAI = IcDAI(cy).balanceOf(me) + IERC20(cx).balanceOf(me);
+        //if function call is made after teh investment call or in an appropriate time then the below function call will take care of it
+        uint256 amount_eqvt = (amount_c * interestDAI) / cBalance;//how to round this
+        AssistContract.splitRiskInvestmentPeriod(amount_c, c, amount_eqvt);
+
     }
 
     function invest() public virtual {
@@ -96,30 +129,30 @@ contract SplitInsuranceV2 is Initializable{
         require(block.timestamp >= S, "split: still in issuance period");
         require(block.timestamp < T1, "split: no longer in insurance period");
 
-        address me = address(this);
         IERC20 cToken = IERC20(c);
-        uint256 balance_c = cToken.balanceOf(me);
-        require(balance_c > 0, "split: no c tokens found");
+        cBalance = cToken.balanceOf(me);
+        require(cBalance > 0, "split: no c tokens found");
         totalTranches = ITranche(A).totalSupply() * 2;
 
+        if(cBalance%2==1){
+            cBalance-=1;
+        }
+
         // Protocol X: Aave
-        cToken.approve(x, balance_c / 2);
-        IAaveLendingpool(x).deposit(c, balance_c / 2, me, 0);
+        cToken.approve(x, cBalance / 2);
+        IAaveLendingpool(x).deposit(c, cBalance / 2, me, 0);
 
         // Protocol Y: Compound
-        cToken.approve(cy, balance_c/2);
+        cToken.approve(cy, cBalance/2);
         require(
-            IcDAI(cy).mint(balance_c / 2) == 0,
+            IcDAI(cy).mint(cBalance / 2) == 0,
             "split: error while minting cDai"
         );
 
         isInvested = true;
-        emit Invest(balance_c, IERC20(cx).balanceOf(me), IERC20(cy).balanceOf(me), 0);
+        emit Invest(cBalance, IERC20(cx).balanceOf(me), IERC20(cy).balanceOf(me), 0);
     }
 
-    /// @notice Attempt to withdraw all funds from Aave and Compound.
-    ///         Then calculate the redeem ratios, or enter fallback mode
-    /// @dev    Should be incentivized for the first successful call
     function divest() public virtual{
         // Should be incentivized on the first successful call
         require(block.timestamp >= T1, "split: still in insurance period");
@@ -128,8 +161,7 @@ contract SplitInsuranceV2 is Initializable{
         IERC20 cToken  = IERC20(c);
         IERC20 cxToken = IERC20(cx);
         IcDAI  cyToken = IcDAI(cy);
-        address me = address(this);
-
+        totalTranches = ITranche(A).totalSupply() * 2;
         uint256 halfOfTranches = totalTranches / 2;
         uint256 balance_cx =  cxToken.balanceOf(me);
         uint256 balance_cy =  cyToken.balanceOf(me);
@@ -137,9 +169,9 @@ contract SplitInsuranceV2 is Initializable{
         uint256 interest;
 
         // Protocol X: Aave
-        uint256 balance_c = cToken.balanceOf(me);
+        cBalance = cToken.balanceOf(me);
         IAaveLendingpool(x).withdraw(c, balance_cx, me);
-        uint256 withdrawn_x = cToken.balanceOf(me) - balance_c;
+        uint256 withdrawn_x = cToken.balanceOf(me) - cBalance;
         if (withdrawn_x > halfOfTranches) {
             interest += withdrawn_x - halfOfTranches;
         }
@@ -149,7 +181,7 @@ contract SplitInsuranceV2 is Initializable{
             cyToken.redeem(balance_cy) == 0,
             "split: unable to redeem cDai"
         );
-        uint256 withdrawn_y = cToken.balanceOf(me) - balance_c - withdrawn_x;
+        uint256 withdrawn_y = cToken.balanceOf(me) - cBalance - withdrawn_x;
         if (withdrawn_y > halfOfTranches) {
             interest += withdrawn_y - halfOfTranches;
         }
@@ -158,14 +190,15 @@ contract SplitInsuranceV2 is Initializable{
 
         // Determine payouts
         inLiquidMode = true;
-        balance_c = cToken.balanceOf(me);
+        cBalance = cToken.balanceOf(me);
 
         //to export the math to the assist contract
-        uint256 [2] memory cPayouts = AssistContract.divestMath(balance_c, totalTranches, interest);
+        uint256 [2] memory cPayouts = AssistContract.divestMath(cBalance, totalTranches, interest);
         cPayoutA = cPayouts[0];
         cPayoutB = cPayouts[1];
 
-        emit Divest(balance_c, balance_cx, balance_cy, 0);
+        emit Divest(cBalance, balance_cx, balance_cy, 0);
+        cBalance = IERC20(c).balanceOf(me);
     }
 
     function claimA(uint256 tranches_to_cx, uint256 tranches_to_cy) public {
@@ -197,53 +230,10 @@ contract SplitInsuranceV2 is Initializable{
     }
 
     function _claimFallback(uint256 tranches_to_cx, uint256 tranches_to_cy, address trancheAddress) internal{
-        require(tranches_to_cx > 0 || tranches_to_cy > 0, "split: to_cx or to_cy must be greater than zero");
-
-        ITranche tranche = ITranche(trancheAddress);
-        require(tranche.balanceOf(msg.sender) >= tranches_to_cx + tranches_to_cy, "split: sender does not hold enough tranche tokens");
-
-        uint256 amount_A;
-        uint256 amount_B;
-        if (trancheAddress == A) {
-            amount_A = tranches_to_cx + tranches_to_cy;
-        } else if (trancheAddress == B) {
-            amount_B = tranches_to_cx + tranches_to_cy;
-        }
-
-        // Payouts
-        uint256 payout_cx;
-        uint256 payout_cy;
-        if (tranches_to_cx > 0) {
-            IERC20 cxToken = IERC20(cx);
-
-            // Initialize cx split, only on first call
-            if (cxPayout == 0) {
-                cxPayout = RAY * cxToken.balanceOf(address(this)) / totalTranches / 2;
-            }
-
-            tranche.burn(msg.sender, tranches_to_cx);
-            payout_cx = tranches_to_cx * cxPayout / RAY;
-            cxToken.transfer(msg.sender, payout_cx);
-        }
-
-        if (tranches_to_cy > 0) {
-            IERC20 cyToken = IERC20(cy);
-
-            // Initialize cy split, only on first call
-            if (cyPayout == 0) {
-                cyPayout = RAY * cyToken.balanceOf(address(this)) / totalTranches / 2;
-            }
-
-            tranche.burn(msg.sender, tranches_to_cy);
-            payout_cy =  tranches_to_cy * cyPayout / RAY;
-            cyToken.transfer(msg.sender, payout_cy);
-        }
-
-        emit Claim(msg.sender, amount_A, amount_B, 0, payout_cx, payout_cy);
+        AssistContract.claimFallback(tranches_to_cx, tranches_to_cy, address(this), trancheAddress, totalTranches);
+        // emit Claim(msg.sender, amount_A, amount_B, 0, payout_cx, payout_cy);
     }
 
-    /// @notice Redeem **all** owned A- and B-tranches for Dai
-    /// @dev    Only available in liquid mode
     function claimAll() public {
         uint256 balance_A = ITranche(A).balanceOf(msg.sender);
         uint256 balance_B = ITranche(B).balanceOf(msg.sender);
@@ -252,47 +242,12 @@ contract SplitInsuranceV2 is Initializable{
     }
 
     function claim(uint256 amount_A, uint256 amount_B) public {
-        if (!inLiquidMode) {
-            if(!isInvested && block.timestamp >= T1) {
-                // If invest was never called, activate liquid mode for redemption
-                inLiquidMode = true;
-            } else {
-                if (block.timestamp < T1) {
-                    revert("split: can not claim during insurance period");
-                } else if (block.timestamp < T2) {
-                    revert("split: call divest() first");
-                } else {
-                    revert("split: use claimA() or claimB() instead");
-                }
-            }
-        }
-        require(amount_A > 0 || amount_B > 0, "split: amount_A or amount_B must be greater than zero");
-        uint256 payout_c;
+        uint256 cBlnce = IERC20(c).balanceOf(me);
+        IERC20(c).approve(assistContracAddr, cBlnce);
 
-        if (amount_A > 0) {
-            ITranche tranche_A = ITranche(A);
-            require(tranche_A.balanceOf(msg.sender) >= amount_A, "split: insufficient tranche A tokens");
-            tranche_A.burn(msg.sender, amount_A);
-            payout_c += cPayoutA * amount_A / RAY;//cpayoutA
-        }
+        AssistContract.claim(amount_A, amount_B, address(this));
 
-        if (amount_B > 0) {
-            ITranche tranche_B = ITranche(B);
-            require(tranche_B.balanceOf(msg.sender) >= amount_B, "split: insufficient tranche B tokens");
-            tranche_B.burn(msg.sender, amount_B);
-            payout_c += cPayoutB * amount_B / RAY;//cpayoutA and cpayoutB are the payouts for each tranche A and B respectively
-        }
-
-        if (payout_c > 0) {
-            IERC20(c).transfer(msg.sender, payout_c);
-        }
-
-        emit Claim(msg.sender, amount_A, amount_B, payout_c, 0, 0);
+        // emit Claim(msg.sender, amount_A, amount_B, payout_c, 0, 0);
     }
 
 }
-
-/**
- * 
- * constructor(_logic, admin_, _data), logice = implem addr, owner of proxy, data = calldata of init function
- */

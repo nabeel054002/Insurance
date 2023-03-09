@@ -6,7 +6,7 @@ import { BigNumber, providers, ethers, Contract, utils} from "ethers";
 import Web3Modal from "web3modal";
 import {Addr, Abi, TrancheAbi} from "../constants";
 import Footer from "../components/Footer";
-import { getAddress } from "ethers/lib/utils";
+// import { getAddress } from "ethers/lib/utils";
 import {RiskSpectrum} from "./images/RiskSpectrum.png"
 import Link from "next/link";
 
@@ -48,7 +48,7 @@ export default function Home (signerInput) {
     return (
         <div>
       <Head>
-        <title>InsuraTranc</title>
+        <title>RiskSpectrum</title>
         <meta
           name="description"
           content="Insurance page for RiskSpectrum"
@@ -67,10 +67,11 @@ export default function Home (signerInput) {
                     The BearerOfAll on the other hand, takes lower priority and is exposed to all of the risks in all the occasions.</p>
         <div className={styles.initContent}>
         <div className={styles.buttonsFirstPg}>
-            <button className={styles.mybutton}><Link href="/insure">Get Insured!
+            <button className={styles.mybutton}><Link href="./insure">Vary Risk!
             </Link></button>
             {/* the get insured button willl lead to all the available insurances, for now it will take to the insurance  */}
-            <button className={styles.mybutton}>Create Insurance!</button>
+            <button className={styles.mybutton}><Link href = "/insure_proxy">Create RiskSpectrum!
+                </Link></button>
         </div>
             
         </div>
@@ -79,7 +80,7 @@ export default function Home (signerInput) {
         
         </div><br/><br/><br/>
         <div className={styles.Insurances}>
-            <h3>Your Insurances</h3>
+            <h3>Your Portfolio</h3>
         </div>
       </main>
     </div>

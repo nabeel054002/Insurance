@@ -13,8 +13,6 @@ async function main() {
     console.log("Invest call has been made");
     const cx = new Contract(Cx, CxAbi, wallet)
     const cy = new Contract(Cy, CyAbi, wallet)
-    console.log("aDAI ka balance", await cx.balanceOf(Addr));
-    console.log("cDAI ka balance", await cy.balanceOf(Addr));
 
     console.log("DAI ka balance")
 }
