@@ -5,8 +5,9 @@ import "./ITranche.sol";
 import "./Tranche.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./InsuranceV2.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract SplitRiskV2Assist {
+contract SplitRiskV2Assist is Ownable{
     
     uint256 public S;
     uint256 public T1;
@@ -28,11 +29,11 @@ contract SplitRiskV2Assist {
     uint256 cxPayout;
     uint256 cyPayout;
 
-    constructor (address _c, address _cx, address _cy) {
-        S = block.timestamp + 60; // +3 minutes// add T1, T2, T3 as the input
-        T1 = S + 2*60; // +6minutes
-        T2 = T1 + 60; // +2minutes
-        T3 = T2 + 60; // +3minutes
+    constructor (uint256 _s, uint _t1, uint256 _t2, uint256 _t3, address _c, address _cx, address _cy) {
+        S = block.timestamp + _s; // add S, T1, T2, T3 as the input
+        T1 = S + _t1; 
+        T2 = T1 + _t2; 
+        T3 = T2 + _t3;
 
         A = address(new Tranche("Tranche A", "A"));
         B = address(new Tranche("Tranche B", "B"));
@@ -42,7 +43,7 @@ contract SplitRiskV2Assist {
         cy = _cy;
     }
 
-    function splitRisk(uint256 amount_c, address _c) public{
+    function splitRisk(uint256 amount_c, address _c) public onlyOwner{
         require(block.timestamp < S, "split: no longer in issuance period");
         require(amount_c > 1, "split: amount_c too low");
 
@@ -60,7 +61,7 @@ contract SplitRiskV2Assist {
     }
     //assume the above works fine
 
-    function splitRiskInvestmentPeriod(uint amount_c, address c, uint amount_eqvt) public {
+    function splitRiskInvestmentPeriod(uint amount_c, address c, uint amount_eqvt) public onlyOwner{
         require(block.timestamp >= S, "split: still in issuance period");
         require(block.timestamp < T1, "split: no longer in investment period");
         require(amount_c > 1, "split: amount_c too low");
@@ -74,7 +75,7 @@ contract SplitRiskV2Assist {
         ITranche(B).mint(tx.origin, amount_eqvt);
     }
 
-    function divestMath (uint256 balance_c, uint256 totalTranches, uint256 interest) public returns (uint256 [2] memory cPayouts) {
+    function divestMath (uint256 balance_c, uint256 totalTranches, uint256 interest) public onlyOwner returns (uint256 [2] memory cPayouts){
         uint256 halfOfTranches = totalTranches / 2;
         if (balance_c >= totalTranches) {
             // No losses, equal split of all c among A/B shares
@@ -93,7 +94,7 @@ contract SplitRiskV2Assist {
         return [cPayoutA, cPayoutB];
     }
 
-    function claim(uint256 amount_A, uint256 amount_B, address addr) public {
+    function claim(uint256 amount_A, uint256 amount_B, address addr) public onlyOwner{
         SplitInsuranceV2 tempInsurance = SplitInsuranceV2(addr);
         bool isInvested = tempInsurance.isInvested();
         bool inLiquidMode = tempInsurance.inLiquidMode();
@@ -133,7 +134,7 @@ contract SplitRiskV2Assist {
         }
     }
 
-    function claimFallback(uint256 tranches_to_cx, uint256 tranches_to_cy, address addr, address trancheAddress, uint256 totalTranches) public {
+    function claimFallback(uint256 tranches_to_cx, uint256 tranches_to_cy, address addr, address trancheAddress, uint256 totalTranches) public onlyOwner{
 
 
         ITranche tranche = ITranche(trancheAddress);

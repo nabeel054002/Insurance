@@ -80,29 +80,36 @@ contract SplitInsuranceV2 is Initializable{
 
     uint256 public cBlnce;
 
-    function initialize (address _Assist) public initializer {
-        initialized = true;
-        assistContracAddr = _Assist;
-        AssistContract = SplitRiskV2Assist(_Assist);
-        S = AssistContract.S();
-        T1 = AssistContract.T1();
-        T2 = AssistContract.T2();
-        T3 = AssistContract.T3();
-        //USER can create the time for the insurances when it overrides based on the asset
+    modifier initializedOnly {
+        require(!initialized, "split: contract already initialized");
+        _;
+    }
 
-        A = AssistContract.A();
-        B = AssistContract.B();
-
-        c = AssistContract.c();//0x6B175474E89094C44Da98b954EedeAC495271d0F; // Maker DAI token
+    function initialize (uint256 _s,  uint256 _t1, uint256 _t2, uint256 _t3, address _c, address _cx, address _cy) public virtual initializer {
+        // initialized = true;
+        S = _s;
+        T1 = _t1;
+        T2 = _t2;
+        T3 = _t3;
+        c = _c;//0x6B175474E89094C44Da98b954EedeAC495271d0F; // Maker DAI token
         x = 0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9; // Aave v2 lending pool 
-        cx = AssistContract.cx();//0x028171bCA77440897B824Ca71D1c56caC55b68A3; // Aave v2 interest bearing DAI (aDAI)  
-        cy = AssistContract.cy(); //0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643; // Compound interest bearing DAI (cDAI) 
+        cx = _cx;//0x028171bCA77440897B824Ca71D1c56caC55b68A3; // Aave v2 interest bearing DAI (aDAI)  //ERC20 compatible investing tokens 
+        cy = _cy; //0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643; // Compound interest bearing DAI (cDAI) 
 
         me = address(this);
 
         RAY = 1e27;
 
         cBalance = 0;
+    }
+
+
+    function runAfterDeployment() public initializedOnly {
+        AssistContract = new SplitRiskV2Assist(S, T1, T2, T3, c, cx, cy);
+        //this function is to be run right after the deployment of the proxy contract
+        A = AssistContract.A();
+        B = AssistContract.B();
+        initialized = true;
     }
 
 
