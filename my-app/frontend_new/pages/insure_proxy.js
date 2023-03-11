@@ -511,14 +511,12 @@ export default function Home(signerInput) {
       <main className={styles.main}>
         <div>
           <Screen/>
-          {blockTimeStamp} is blocktimestamp
+          {/* {blockTimeStamp} is blocktimestamp
           {S.toString()} is S
           {tOne.toString()} is tone
           {tTwo.toString()} is ttwo
           {tThree.toString()} is t three
-          {cBalance.toString()} is C Balance
-          <div>
-          </div>
+          {cBalance.toString()} is C Balance */}
         </div>
       </main>
     </div>
