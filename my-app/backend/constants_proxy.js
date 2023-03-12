@@ -553,20 +553,5 @@ const implementationAbi = [
     "type": "function"
   }
 ];
-const factoryAbi = [
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "Implementation",
-        "type": "address"
-      }
-    ],
-    "name": "deployRiskSpectrum",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }
-]
-module.exports = {proxyAddr, implementationAbi, implementationAddr, factoryAbi}
+module.exports = {proxyAddr, implementationAbi, implementationAddr}
 

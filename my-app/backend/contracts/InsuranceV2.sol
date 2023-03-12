@@ -22,7 +22,7 @@ interface IcDAI is IERC20 {
 }
 
 
-contract SplitInsuranceV2 is Initializable{
+contract SplitInsuranceV2{
     /* Internal and external contract addresses  */
     // address public A; // Tranche A token contract
     // address public B; // Tranche A token contract
@@ -77,9 +77,13 @@ contract SplitInsuranceV2 is Initializable{
     event Divest(uint256 amount_c, uint256 amount_cx, uint256 amount_cy, uint256 amount_c_incentive);
     event Claim(address indexed claimant, uint256 amount_A, uint256 amount_B, uint256 amount_c, uint256 amount_cx, uint256 amount_cy);
 
-
-    function initialize (address _Assist) public initializer {
+    modifier onlyInitialized() {
+        require(!initialized, "Contract not initialized");
         initialized = true;
+        _;
+    }
+
+    function initialize (address _Assist) public onlyInitialized {
         assistContracAddr = _Assist;
         AssistContract = SplitRiskV2Assist(_Assist);
         S = AssistContract.S();
@@ -87,7 +91,6 @@ contract SplitInsuranceV2 is Initializable{
         T2 = AssistContract.T2();
         T3 = AssistContract.T3();
         //USER can create the time for the insurances when it overrides based on the asset
-
         A = AssistContract.A();
         B = AssistContract.B();
 
