@@ -5,6 +5,7 @@ import "./InsuranceV2.sol";
 import "./SplitRiskV2Assist.sol";
 import "./InsureAssist.sol";
 import "hardhat/console.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract RiskSpectrumFactory {
     //mapping(address => address) public riskSpectrumContracts;
@@ -20,9 +21,20 @@ contract RiskSpectrumFactory {
         console.log("got spectrum");
         bytes memory constructData = abi.encodeWithSignature("initialize(address)", Assist);//is this valid?
         Proxy proxy = new Proxy(constructData, address(newRiskSpectrum));
-        riskSpectrums[address(newRiskSpectrum)].push(address(proxy));
+        address investingToken = newRiskSpectrum.c();
+        riskSpectrums[investingToken].push(address(proxy));
         //use address of investing token
-        console.log("proxy address: ", address(proxy));
-        //riskSpe
+    }
+
+    function returnData (address _proxy) public view returns(string memory){
+        Proxy proxy = Proxy(_proxy);
+        string returnData = "";
+        IERC20 c = IERC20(proxy.c());
+        IERC20 cx = IERC20(proxy.cx());
+        IERC20 cy = IERC20(proxy.cy());
+        returnData += c.name();
+        returnData += cx.name();
+        returnData += cy.name();
+        return returnData;
     }
 }
