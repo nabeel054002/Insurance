@@ -1,6 +1,6 @@
-const proxyAddr = "0x8b9d5A75328b5F3167b04B42AD00092E7d6c485c"
-const implementationAddr = "0xFD296cCDB97C605bfdE514e9810eA05f421DEBc2"
-const assistAddr = "0xcb0A9835CDf63c84FE80Fcc59d91d7505871c98B"
+const proxyAddr = "0x2f6f107D4Afd43c451B74DA41A6DDA53D2Bf24B1"
+const implementationAddr = "0x2fe19128A8257182fdD77f90eA96D27cA342897A"
+const assistAddr = "0xfDb6669cF60C1dBfB0f72Ea50A6eC5e0FD6089E1"
 const proxyAbi = [
   {
     "inputs": [

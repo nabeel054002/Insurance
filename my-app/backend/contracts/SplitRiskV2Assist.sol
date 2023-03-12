@@ -29,10 +29,10 @@ contract SplitRiskV2Assist {
     uint256 cyPayout;
 
     constructor (address _c, address _cx, address _cy) {
-        S = block.timestamp + 60; // +3 minutes// add T1, T2, T3 as the input
-        T1 = S + 2*60; // +6minutes
-        T2 = T1 + 60; // +2minutes
-        T3 = T2 + 60; // +3minutes
+        S = block.timestamp + 90; // +3 minutes// add T1, T2, T3 as the input
+        T1 = S + 90; // +6minutes
+        T2 = T1 + 90; // +2minutes
+        T3 = T2 + 90; // +3minutes
 
         A = address(new Tranche("Tranche A", "A"));
         B = address(new Tranche("Tranche B", "B"));
@@ -111,7 +111,7 @@ contract SplitRiskV2Assist {
                 }
             }
         }
-        
+        require(amount_A > 0 || amount_B > 0, "split: amount_A or amount_B must be greater than zero");
         uint256 payout_c;
 
         if (amount_A > 0) {
@@ -129,12 +129,13 @@ contract SplitRiskV2Assist {
         }
 
         if (payout_c > 0) {
-            IERC20(c).transferFrom(msg.sender, tx.origin, payout_c);
+            IERC20(c).transfer(tx.origin, payout_c);
         }
     }
 
     function claimFallback(uint256 tranches_to_cx, uint256 tranches_to_cy, address addr, address trancheAddress, uint256 totalTranches) public {
 
+        require(tranches_to_cx > 0 || tranches_to_cy > 0, "split: to_cx or to_cy must be greater than zero");
 
         ITranche tranche = ITranche(trancheAddress);
         require(tranche.balanceOf(tx.origin) >= tranches_to_cx + tranches_to_cy, "split: sender does not hold enough tranche tokens");
@@ -160,7 +161,7 @@ contract SplitRiskV2Assist {
 
             tranche.burn(tx.origin, tranches_to_cx);
             payout_cx = tranches_to_cx * cxPayout / RAY;
-            cxToken.transferFrom(msg.sender, tx.origin, payout_cx);
+            cxToken.transfer(tx.origin, payout_cx);
         }
 
         if (tranches_to_cy > 0) {
@@ -173,7 +174,7 @@ contract SplitRiskV2Assist {
 
             tranche.burn(tx.origin, tranches_to_cy);
             payout_cy =  tranches_to_cy * cyPayout / RAY;
-            cyToken.transferFrom(msg.sender, tx.origin, payout_cy);
+            cyToken.transfer(tx.origin, payout_cy);
         }
     }
 

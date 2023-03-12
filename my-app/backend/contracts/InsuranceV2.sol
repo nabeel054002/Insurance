@@ -78,8 +78,6 @@ contract SplitInsuranceV2 is Initializable{
     event Claim(address indexed claimant, uint256 amount_A, uint256 amount_B, uint256 amount_c, uint256 amount_cx, uint256 amount_cy);
 
 
-    uint256 public cBlnce;
-
     function initialize (address _Assist) public initializer {
         initialized = true;
         assistContracAddr = _Assist;
@@ -232,10 +230,6 @@ contract SplitInsuranceV2 is Initializable{
     }
 
     function _claimFallback(uint256 tranches_to_cx, uint256 tranches_to_cy, address trancheAddress) internal{
-        cBlnce = IERC20(cx).balanceOf(me);
-        IERC20(cx).approve(assistContracAddr, cBlnce);
-        cBlnce = IERC20(cy).balanceOf(me);
-        IERC20(cy).approve(assistContracAddr, cBlnce);
         AssistContract.claimFallback(tranches_to_cx, tranches_to_cy, address(this), trancheAddress, totalTranches);
         // emit Claim(msg.sender, amount_A, amount_B, 0, payout_cx, payout_cy);
     }
@@ -248,7 +242,7 @@ contract SplitInsuranceV2 is Initializable{
     }
 
     function claim(uint256 amount_A, uint256 amount_B) public {
-        cBlnce = IERC20(c).balanceOf(me);
+        uint256 cBlnce = IERC20(c).balanceOf(me);
         IERC20(c).approve(assistContracAddr, cBlnce);
 
         AssistContract.claim(amount_A, amount_B, address(this));

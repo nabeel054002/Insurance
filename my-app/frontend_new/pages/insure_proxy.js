@@ -163,13 +163,9 @@ export default function Home(signerInput) {
     const BfromAAVEBN = utils.parseUnits(BfromAAVE.toString(), 18);
     const AfromCompoundBN = utils.parseUnits(AfromCompound.toString(), 18);
     const BfromCompoundBN = utils.parseUnits(BfromCompound.toString(), 18);
-    let tx = await contract.claimA(AfromAAVEBN, AfromCompoundBN, {
-      gasLimit: 1000000,
-    });
+    let tx = await contract.claimA(AfromAAVEBN, AfromCompoundBN);
     await tx.wait();
-    await contract.claimB(BfromAAVEBN, BfromCompoundBN, {
-      gasLimit: 1000000,
-    });
+    await contract.claimB(BfromAAVEBN, BfromCompoundBN);
     await tx.wait();
   }
 
@@ -186,8 +182,8 @@ export default function Home(signerInput) {
   const Balances = () =>{
     return (
       <div className={styles.balances}>
-        <h3>Tranche Safebet Balance: {utils.formatUnits(userABalance.toString(), 18)}</h3>
-        <h3>Tranche BearerOfAll Balance: {utils.formatUnits(userBBalance.toString(), 18)}</h3>
+        <h3>Tranche A Balance: {utils.formatUnits(userABalance.toString(), 18)}</h3>
+        <h3>Tranche B Balance: {utils.formatUnits(userBBalance.toString(), 18)}</h3>
       </div>
     )
   }
@@ -319,8 +315,8 @@ export default function Home(signerInput) {
         <h2>Claim your tranche tokens and convert them into DAI</h2>
         <div>
           <div className={styles.threeDiv}>
-          <h3>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>
-          <h3>You have {utils.formatUnits(userBBalance.toString(), 18).toString()} BearerOfAll tranche tokens</h3>
+          <h3>You have {userABalance.toString()} SafeBet tranche tokens</h3>
+          <h3>You have {userBBalance.toString()} BearerOfAll tranche tokens</h3>
         </div>
         <div className={styles.three}>
           <h3>Claim the DAI tokens that you are entitled to!</h3>  
@@ -348,7 +344,7 @@ export default function Home(signerInput) {
         <div >
           <br/>
           <div className={styles.center}>
-          <h3>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>      
+          <h3>You have {userABalance.toString()} A tranche tokens</h3>      
           </div>
 
           <br/>
@@ -400,34 +396,33 @@ export default function Home(signerInput) {
   const AboveTThree = ()=>{
     return(<div className = {styles.container}>
       <div>
-      <h2>Fallback-claim your tokens</h2>
-      <h3>
+      <h2 className={styles.toptxt}>Fallback-claim your tokens</h2>
+      <h3 className={styles.scndtxt}>
             Due to illiquidity of the invested tokens, the state of the insurance is not in the Liquid mode.<br></br>
             We are offering redemptions for both the SafeBet and the BearerOfAll tranches</h3>
-      <div className={styles.claimWindows}>
-        <div className={styles.claimWindowFallback}>
-          <div className={styles.claimContentFallback}>
-            <h2> Claim your SafeBet tranche tokens</h2>
-            <div>
-            <h3>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>
-            <div>
-              How much of your SafeBet tranche tokens do you want to redeem from AAVE?
-              <br/>
-              <input label="AfromAAVE" placeholder="Amount from AAVE"></input>
-            </div>
-            <div>
-              How much of your SafeBet tranche tokens do you want to redeem from Compound?
+      <div className={styles.content}>
+        <div className={styles.left}>
+          <h2> Claim your SafeBet tranche tokens</h2>
+
+          <div className={styles.leftdiv}>
+          <h3>You have {userABalance.toString()} SafeBet tranche tokens</h3>
+          <div>
+            How much of your SafeBet tranche tokens do you want to redeem from AAVE?
             <br/>
-            <input label = "AfromCompound" placeholder="Amount from Compound"></input>
-            </div>
+            <input label="AfromAAVE" placeholder="Amount from AAVE"></input>
+          </div>
+          <div>
+          How much of your SafeBet tranche tokens do you want to redeem from Compound?
+          <br/>
+          <input label = "AfromCompound" placeholder="Amount from Compound"></input>
+          </div>
           </div>
         </div>
-      </div>
-      <div className={styles.claimWindowFallback}>
-        <div className={styles.claimContentFallback}>
-        <h2>Claim your BearerOfAll tranche tokens</h2>
-          <div>
-          <h3>You have {utils.formatUnits(userBBalance.toString(), 18).toString()} BearerOfAll tranche tokens</h3>
+        <div className={styles.right}>
+          <h2>Claim your BearerOfAll tranche tokens</h2>
+
+          <div className={styles.leftdiv}>
+          <h3>You have {userABalance.toString()} BearerOfAll tranche tokens</h3>
           <div>
             How much of your BearerOfAll tranche tokens do you want to redeem from AAVE?
             <br></br>
@@ -442,10 +437,7 @@ export default function Home(signerInput) {
           </div>
           </div>
         </div>
-      </div>
-        </div>
-        <div className={styles.center}>
-        <div>
+        <div className={styles.btn_claim}>
             <button type = "submit"  onClick = {() => {
               const tx = claimInFallbackMode(AfromAAVE, AfromCompound, BfromAAVE, BfromCompound);
             }} className={styles.mybutton}>Claim!</button>
@@ -482,8 +474,9 @@ export default function Home(signerInput) {
         return <TThree/>
       }else{
         return(
-          <AboveTThree/>
-          // <TThree/>
+          // <AboveTThree/>
+          <TThree/>
+          // <TOne/>
         )
       }
       

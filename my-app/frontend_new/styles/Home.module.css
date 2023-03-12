@@ -123,32 +123,6 @@
   font-size: 1.5em;
 }
 
-.claimWindows {
-  display: flex;
-  flex: auto;
-  padding: 50px;
-  flex-direction: row;
-  width: 100%;
-  justify-content: space-around;
-}
-
-.claimWindowFallback{
-  height: 300px;
-  width: 800px;
-  border-radius: 15%;
-  border-width: 1px;
-  padding: 20px 50px;
-  border-style: groove;
-}
-
-.claimContentFallback {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
 .firstDiv {
   width: 800px;
   overflow: hidden;
