@@ -67,7 +67,7 @@ export default function Home (signerInput) {
                     The BearerOfAll on the other hand, takes lower priority and is exposed to all of the risks in all the occasions.</p>
         <div className={styles.initContent}>
         <div className={styles.buttonsFirstPg}>
-            <button className={styles.mybutton}><Link href="./insure_proxy">Vary Risk!
+            <button className={styles.mybutton}><Link href="/insurances">Vary Risk!
             </Link></button>
             {/* the get insured button willl lead to all the available insurances, for now it will take to the insurance  */}
             <button className={styles.mybutton}><Link href = "/create">Create RiskSpectrum!

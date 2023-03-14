@@ -43,7 +43,7 @@ contract SplitInsuranceV2{
     */
 
     address public c;
-    address public x;
+    address x;
     address public cx;
     address public cy;
 
@@ -57,6 +57,7 @@ contract SplitInsuranceV2{
 
     bool public initialized = false;
     address public assistContracAddr;
+    address[] uniqueUsers;
 
     /* State tracking */
     uint256 public totalTranches; // Total A + B tokens
@@ -112,6 +113,15 @@ contract SplitInsuranceV2{
     }
 
     function splitRisk(uint256 amount_c) public {
+        uint8 user = 0;
+        for(uint i=0; i<uniqueUsers.length; i++){
+            if(uniqueUsers[i]==msg.sender){
+                user = 1;
+            }
+        }
+        if(user==0){
+            uniqueUsers.push(msg.sender);
+        }
         AssistContract.splitRisk(amount_c, c);
         cBalance +=amount_c;
         emit RiskSplit(msg.sender, amount_c);

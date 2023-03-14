@@ -42,7 +42,6 @@ function MyApp({ Component, pageProps }) {
 
     const getProviderOrSigner = async (needSigner = false) => {
         const provider = await web3ModalRef.current.connect();
-        console.log("sdfsdf",ethers.providers)
         const web3Provider = new ethers.providers.Web3Provider(provider);
         setWeb3provider(web3Provider);
     

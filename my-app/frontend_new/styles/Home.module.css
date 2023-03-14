@@ -129,6 +129,32 @@
   word-wrap: break-word;
 }
 
+.riskSpectrum {
+  border: #222;
+  border-radius: 20%;
+  padding: 70px 70px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.riskSpectrum:hover {
+  color: grey;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+}
+
+.investingToken{
+  display: flex;
+  width: 880px;
+  justify-content: start;
+}
+
+.protocolsInRiskSpectrum{
+  display: flex;
+  flex-direction: row;
+  width: 880px;
+  align-items: left;
+  justify-content: space-between;
+}
+
 .imageUniswap {
   width: 400px;
   height: 150px;

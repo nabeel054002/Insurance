@@ -1,6 +1,178 @@
-const proxyAddr = "0xA13d4a67745D4Ed129AF590c495897eE2C7F8Cfc"
-const implementationAddr = "0xba840136E489cB5eCf9D9988421F3a9F45e0c341"
-const assistAddr = "0x2963ff0196a901ec3F56d7531e7C4Ce8F226462B"
+const proxyAbi = [
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "constructData",
+        "type": "bytes"
+      },
+      {
+        "internalType": "address",
+        "name": "contractLogic",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "fallback"
+  },
+  {
+    "inputs": [],
+    "name": "implementation",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
+  }
+];
+const factoryAbi = [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "Implementation",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "Assist",
+        "type": "address"
+      }
+    ],
+    "name": "deployRiskSpectrum",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "detailsOfRiskSpectrums",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "c",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "cx",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "cy",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "_implementation",
+        "type": "address"
+      }
+    ],
+    "name": "returnData",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "c",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "cx",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "cy",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct RiskSpectrumFactory.riskSpectrum",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "riskSpectrumContracts",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "riskSpectrumContractsArray",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "riskSpectrumContractsArrayLength",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
 const implementationAbi = [
   {
     "anonymous": false,
@@ -526,6 +698,7 @@ const implementationAbi = [
     "stateMutability": "view",
     "type": "function"
   }
-]
-module.exports = {proxyAddr, implementationAbi, implementationAddr}
-
+];
+const assistAddr = "0x47c05BCCA7d57c87083EB4e586007530eE4539e9"
+const factoryAddr = "0x40A633EeF249F21D95C8803b7144f19AAfeEF7ae"
+module.exports = {proxyAbi, factoryAbi, assistAddr, factoryAddr, implementationAbi}

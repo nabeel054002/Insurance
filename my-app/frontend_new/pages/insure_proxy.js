@@ -4,7 +4,7 @@ import styles from "../styles/Home.module.css";
 import {useRef, useEffect, useState, React} from "react"
 import { BigNumber, providers, Contract, utils, ethers} from "ethers";
 import Web3Modal from "web3modal";
-import {proxyAddr, implementationAddr, assistAddr, proxyAbi, implementationAbi, TrancheAbi, daiAbi, assistAbi} from "../constants";
+import {proxyAddr, implementationAddr, implementationAbi, TrancheAbi, daiAbi, assistAbi} from "../constants";
 
 import Footer from "../components/Footer";
 
@@ -518,14 +518,3 @@ export default function Home(signerInput) {
   );
 }
 
-/**
- * 
- * 1676900795 is blocktimestamp1676900917 is S1676901277 is tone1676901397 is ttwo1676901577 is t three
- * 
- * 
- * Assist Contract Address: 0x0b27a79cb9C0B38eE06Ca3d94DAA68e0Ed17F953
-Implementation Contract Address: 0x7bdd3b028C4796eF0EAf07d11394d0d9d8c24139
-calldata is 0xc4d66de8
-got proxy
-Proxy Contract Address:  0xB468647B04bF657C9ee2de65252037d781eABafD
- */
