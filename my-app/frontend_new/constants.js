@@ -549,8 +549,7 @@ const implementationAbi = [
     "type": "function"
   }
 ];
-const TrancheAbi = 
-[
+const TrancheAbi = [
   {
   "inputs": [
     {

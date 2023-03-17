@@ -85,11 +85,20 @@ export default function Home(signerInput) {
   const getRiskSpectrums = async () => {
     console.log("getRiskSpectrums entered")
     const signer = await getProviderOrSigner(true);
+    console.log("signer in the getriskspectrums fn is ",signer)
     const factoryContract = new Contract(factoryAddr, factoryAbi, signer);
     console.log("asdads")
-    console.log(factoryContract)
-    const arrLength = await factoryContract.riskSpectrumContractsArrayLength();//issue, for now it is just gonna be 3
-    // const arrLength = 3;
+    console.log("factory contract is",factoryContract)
+    let arrLength = await factoryContract.riskSpectrumContractsArrayLength() .catch((err) => {
+      console.log("Catch entered")
+      console.error(err);
+    }).then((e) =>{
+      console.log(e)
+    })//issue, for now it is just gonna be 3
+    console.log("arrlength as a var is", arrLength)
+    arrLength = 3;
+    //the issue is in reading the contract...
+    console.log("ASDasdasdasdq#RER")
     console.log("arrLength is ", arrLength.toString())
     const proxyContracts = [];
     const implementationContracts = [];
@@ -113,11 +122,12 @@ export default function Home(signerInput) {
   }
 
   const availableRiskSpectrums = () => {
+    console.log(implementationArr)
     let linkUrl = "";
     return (
       <div>
         {descriptionArr.map((description, index) => {
-          linkUrl = "/insurances/" + implementationArr[index]
+          linkUrl = "/insurances/" + implementationArr[index] + "PAUSE" + proxyArr[index];
           return(
             <Link href={linkUrl}><div className = {styles.riskSpectrum}>
                 <h3>RiskSpectrum  {implementationArr[index].substr(0,6)}</h3>

@@ -3,19 +3,48 @@ import Head from "next/head";
 import { useRouter } from 'next/router';
 import styles from "../../styles/Home.module.css";
 import {useState, useEffect, useRef} from "react";
-import {BigNumber, Contract, ethers} from "ethers";
-import { factoryAddr, factoryAbi, implementationAbi } from "../../constantsFactory";
+import {BigNumber, Contract, ethers, utils} from "ethers";
+import { factoryAddr, factoryAbi, implementationAbi, TrancheAbi, daiAbi, assistAbi } from "../../constantsFactory";
 
 const Post = () => {
+
+  let AfromAAVE = 0;
+  let AfromCompound = 0;
+  let BfromAAVE = 0;
+  let BfromCompound = 0;
+  let amountOfDAI = 0;
+  let amountOfDAI_dash = 0;
+  let proxyAddr = "";
+
+
   const router = useRouter()
-  const { id } = router.query
+  const { id } = router.query;
+  let slicerIdx = 0;
+
+  for(let i = 0; i < id.length; i++){
+    if(id.substring(i,i+5) === "PAUSE"){
+      slicerIdx = i;
+    }
+  }
+  const implementationAddr = id.substring(0, slicerIdx)
+  proxyAddr = id.substring(slicerIdx+5, id.length)
+  console.log("slicerIdx", id.substring(0, slicerIdx))
+  console.log("rest", id.substring(slicerIdx+5, id.length))
 
   const [signer, setSigner] = useState(null);
   const [web3provider, setWeb3provider] = useState(null);
 
-  const [proxyAddr, setProxyAddr] = useState("");
-  const implementationnAddr = id;
-  console.log("your mom implements", implementationnAddr)
+  // const [proxyAddr, setProxyAddr] = useState("");
+//   const getProxyAddr = async () =>{
+//     const signer = await getProviderOrSigner(true);
+//     const factoryContract = new Contract(factoryAddr, factoryAbi, signer);
+//     proxyAddr = await factoryContract.riskSpectrumContracts(implementationAddr);
+
+// }
+  
+  console.log("proxyAddr globally is referneced as", proxyAddr)
+  console.log("your mom", implementationAddr)
+  
 
   const [walletConnected, setWalletConnected] = useState(false);
     const web3ModalRef = useRef();
@@ -34,18 +63,12 @@ const Post = () => {
             getTimes();
             updateBlockTimestamp();//need to see if this is necessary
             getUserTrancheBalance();
-            getProxyAddr();
+            // getProxyAddr();
           });
         }
       }, [walletConnected]);
 
-    const getProxyAddr = async () =>{
-        const signer = await getProviderOrSigner(true);
-        const factoryContract = new Contract(factoryAddr, factoryAbi, signer);
-        const _proxyAddr = await factoryContract.riskSpectrumContracts(implementationnAddr);
-
-        setProxyAddr(_proxyAddr);
-    }
+    
     const connectWallet = async () => {
     try {
         await getProviderOrSigner();
@@ -73,12 +96,7 @@ const Post = () => {
         }
         return web3Provider;
       };
-      let AfromAAVE = 0;
-      let AfromCompound = 0;
-      let BfromAAVE = 0;
-      let BfromCompound = 0;
-      let amountOfDAI = 0;
-      let amountOfDAI_dash = 0;
+      
       const zero = BigNumber.from("0")
       const [blockTimeStamp, setBlockTimeStamp] = useState(0)
       const [S, setS] = useState(zero);
@@ -106,6 +124,8 @@ const Post = () => {
       const getTimes = async () =>{
         //to be run only once 
         const signer = await getProviderOrSigner(true);
+        // if(proxyAddr.length == 0){await getProxyAddr()}
+        // console.log("proxyAddr is ", proxyAddr)
         const contract = new ethers.Contract(proxyAddr, implementationAbi, signer);
         console.log(contract)
         // const contract = new ethers.Contract("SplitInsuranceV2", proxyAddr, signer);
@@ -121,6 +141,7 @@ const Post = () => {
       const mintForDAI_dash = async(value) => {
         console.log("entered")
         const signer = await getProviderOrSigner(true);
+        // if(proxyAddr.length == 1){await getProxyAddr()}
         const contract = new Contract(proxyAddr, implementationAbi, signer);
         const valueBN = utils.parseUnits(value, 18);
         const dai = new Contract("0x6b175474e89094c44da98b954eedeac495271d0f", daiAbi, signer);
@@ -140,16 +161,14 @@ const Post = () => {
         const dai = new Contract("0x6b175474e89094c44da98b954eedeac495271d0f", daiAbi, signer);
         const tx3 = await dai.approve(await contract.AssistContract(), valueBN);
         await tx3.wait();
-        console.log("first approve")
         //idhar tak theek hai 
         const assist = new Contract(await contract.AssistContract(), assistAbi, signer);
         console.log("value of c in assists contract is",await assist.c())
+        console.log("contract is", contract)
         const tx = await contract.splitRisk(valueBN, {
           gasLimit: 30000000,
         });
-        console.log("idk")
         await tx.wait();
-        console.log(contract)
         const implementation = new Contract(implementationAddr, implementationAbi, signer)
         console.log("value of c in actual", await implementation.c())
         console.log("value of c in assists contract is",await assist.c())
@@ -166,18 +185,21 @@ const Post = () => {
             setBlockTimeStamp(t)
         })
         const signer = await getProviderOrSigner(true);
+        // if(proxyAddr.length == 1){await getProxyAddr()
+        // }
         const contract = new ethers.Contract(proxyAddr, implementationAbi, signer);
         const isInvested = (await contract.isInvested())
         const inLiquidMode = (await contract.inLiquidMode())
         setIsInvested(isInvested)
         setInLiquidMode(inLiquidMode)
-        }
+      }
     
     
     
       const getUserTrancheBalance = async () =>{
         const signer = await getProviderOrSigner(true);
         const addrUser = (await signer.getAddress())
+        // if(proxyAddr.length == 1){await getProxyAddr()}
         const contract = new Contract(proxyAddr, implementationAbi, signer);
         const AtrancheAddr = (await contract.A());
         const BtrancheAddr = (await contract.B());
@@ -196,6 +218,7 @@ const Post = () => {
     
       const updateCBalance = async () =>{
         const signer = await getProviderOrSigner();
+        // if(proxyAddr.length == 1){await getProxyAddr()}
         const contract = new Contract(proxyAddr, implementationAbi, signer);
         const cBalance = (await contract.cBalance());
         setCBalance(cBalance);
@@ -204,6 +227,7 @@ const Post = () => {
       const claimInLiquidmode = async () =>{
         console.log("claim in liquid mode entered")
         const signer = await getProviderOrSigner();
+        // if(proxyAddr.length == 1){await getProxyAddr()}
         const contract = new Contract(proxyAddr, implementationAbi, signer);
         const tx = await contract.claimAll({
           gasLimit: 1000000,
@@ -212,6 +236,8 @@ const Post = () => {
       }
     
       const claimInFallbackMode = async (AfromAAVE, AfromCompound, BfromAAVE, BfromCompound) =>{
+        // if(proxyAddr.length == 1){await getProxyAddr()}
+        const signer = await getProviderOrSigner(true)
         const contract = new Contract(proxyAddr, implementationAbi, signer);
         const AfromAAVEBN = utils.parseUnits(AfromAAVE.toString(), 18);
         const BfromAAVEBN = utils.parseUnits(BfromAAVE.toString(), 18);
@@ -224,6 +250,8 @@ const Post = () => {
       }
     
       const claimInOnlyA = async (AfromAAVE, AfromCompound) =>{
+        const signer = await getProviderOrSigner(true)
+        // if(proxyAddr.length == 1){await getProxyAddr()}
         const contract = new Contract(proxyAddr, implementationAbi, signer);
         const AfromAAVEBN = utils.parseUnits(AfromAAVE.toString(), 18);
         const AfromCompoundBN = utils.parseUnits(AfromCompound.toString(), 18);
@@ -537,8 +565,6 @@ const Post = () => {
       } else{
         return(
           <div>
-            {/* <h1>Something went wrong</h1> */}
-            {/* <TThree/> */}
             <AboveTThree/>
           </div>
         )

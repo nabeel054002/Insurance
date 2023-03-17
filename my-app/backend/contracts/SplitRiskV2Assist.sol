@@ -29,10 +29,10 @@ contract SplitRiskV2Assist {
     uint256 cyPayout;
 
     constructor (address _c, address _cx, address _cy) {
-        S = block.timestamp + 90; // +3 minutes// add T1, T2, T3 as the input
-        T1 = S + 90; // +6minutes
-        T2 = T1 + 90; // +2minutes
-        T3 = T2 + 90; // +3minutes
+        S = block.timestamp + 60*60; // +3 minutes// add T1, T2, T3 as the input
+        T1 = S + 60*7; // +6minutes
+        T2 = T1 + 420; // +2minutes
+        T3 = T2 + 500; // +3minutes
 
         A = address(new Tranche("Tranche A", "A"));
         B = address(new Tranche("Tranche B", "B"));

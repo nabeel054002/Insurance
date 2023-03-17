@@ -13,7 +13,6 @@ async function main() {
     const deployedAssistContract = await AssistContract.deploy("0x6B175474E89094C44Da98b954EedeAC495271d0F", "0x028171bCA77440897B824Ca71D1c56caC55b68A3","0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643", {gasLimit: 30000000});
     await deployedAssistContract.deployed();
 
-
     const RiskSpectrumContract = await ethers.getContractFactory(
         "SplitInsuranceV2"
       );
@@ -29,7 +28,8 @@ async function main() {
     const factory = await ethers.getContractFactory("RiskSpectrumFactory");
     const deployedFactory = await factory.deploy({gasLimit: 30000000});
     await deployedFactory.deployed();
-
+    console.log("Assist, Implementation and Factory contract has been deployed");
+    console.log("the next step is to deploy the proxy and by deploying the proxy the implementation of the proxy naturally gets initialized")
     
     const provider = new ethers.providers.JsonRpcProvider("http://localhost:8545");
     const signer = provider.getSigner();
@@ -42,22 +42,21 @@ async function main() {
     const tx4 = await contract.deployRiskSpectrum(thirdDeployedSpectrumContract.address, deployedAssistContract.address);
     await tx4.wait();
 
-    console.log("deployed proxy for risk spectrum contract", await contract.riskSpectrumContracts(deployedRiskSpectrumContract.address))
-    const tx = await contract.returnData(deployedRiskSpectrumContract.address);
-    console.log(await tx.wait());
+    console.log("have deployed the proxy contracts and hence initialized them as well")
 
-    const proxyContract = new ethers.Contract(await contract.riskSpectrumContracts(secondDeployedSpectrumContract.address), proxyAbi, wallet);
-    console.log("proxy contract", proxyContract.address)
-    const implementation = await proxyContract.implementation();//why is this giving address of assist, but in console.log solidity it is giving the actual implementation contract`s address
-    console.log("implementation", implementation);
+    // console.log("deployed proxy for risk spectrum contract", await contract.riskSpectrumContracts(deployedRiskSpectrumContract.address))
+    // const tx = await contract.returnData(deployedRiskSpectrumContract.address);
+    // console.log(await tx.wait());
 
-    console.log("trial to see if i get the struct");
+    // const proxyContract = new ethers.Contract(await contract.riskSpectrumContracts(secondDeployedSpectrumContract.address), proxyAbi, wallet);
+    // console.log("proxy contract", proxyContract.address)
+    // const implementation = await proxyContract.implementation();//why is this giving address of assist, but in console.log solidity it is giving the actual implementation contract`s address
+    // console.log("implementation", implementation);
+
+    // console.log("trial to see if i get the struct");
 
     console.log(`const assistAddr = "${deployedAssistContract.address}"`);
     console.log(`const factoryAddr = "${deployedFactory.address}"`);
-    console.log(`const riskSpectrumAddr = "${deployedRiskSpectrumContract.address}"`);
-    console.log(`const secondRiskSpectrumAddr = "${secondDeployedSpectrumContract.address}"`);
-    console.log(`const thirdRiskSpectrumAddr = "${thirdDeployedSpectrumContract.address}"`);
 
 }
 

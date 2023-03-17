@@ -39,19 +39,6 @@ const proxyAbi = [
 ]
 const factoryAbi = [
   {
-    "inputs": [],
-    "name": "c",
-    "outputs": [
-      {
-        "internalType": "contract ERC20",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -107,7 +94,30 @@ const factoryAbi = [
       }
     ],
     "name": "returnData",
-    "outputs": [],
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "c",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "cx",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "cy",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct RiskSpectrumFactory.riskSpectrum",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
