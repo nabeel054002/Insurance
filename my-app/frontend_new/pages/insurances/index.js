@@ -105,8 +105,10 @@ export default function Home(signerInput) {
     const descriptionArr = [];
     console.log("for loop abt to enter")
     for(let i = 0; i < arrLength; i++){
-      console.log("asdasdasd")
+      
         const proxyContract = new Contract(await factoryContract.riskSpectrumContractsArray(i), proxyAbi, signer);
+        console.log("imp addr", await factoryContract.riskSpectrumContractsArray(i));
+        console.log("proxy addr", await proxyContract.implementation())
         proxyContracts.push(proxyContract.address);
         const implementationContract = new Contract(await proxyContract.implementation(), proxyAbi, signer);
         implementationContracts.push(implementationContract.address);

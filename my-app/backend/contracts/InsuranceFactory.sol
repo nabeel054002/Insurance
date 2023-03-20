@@ -22,7 +22,7 @@ contract RiskSpectrumFactory {
     //readability is important, so i will use the following naming convention, "c, 2 protocols"
     //to access it using dynamic routing do i have to generate a hash, unique value that can address the different contracts 
 
-    function deployRiskSpectrum (address Implementation, address Assist) public{
+    function deployRiskSpectrum (address payable Implementation, address Assist) public{
         console.log("About to deploy");
         SplitInsuranceV2 newRiskSpectrum = SplitInsuranceV2(Implementation);
         console.log("newRiskSpectrum works");

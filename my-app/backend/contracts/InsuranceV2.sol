@@ -110,6 +110,7 @@ contract SplitInsuranceV2{
 
     function proxiableUUID() public pure returns (bytes32) {
         return 0xc5f16f0fcc639fa48a6947836d9850f504798523bf8c9a3a87d5876cf622bcf7;
+        //0xc5f16f0fcc639fa48a6947836d9850f504798523bf8c9a3a87d5876cf622bcf7
     }
 
     function splitRisk(uint256 amount_c) public {
@@ -122,7 +123,9 @@ contract SplitInsuranceV2{
         if(user==0){
             uniqueUsers.push(msg.sender);
         }
-        AssistContract.splitRisk(amount_c, c);
+        console.log("assistcontractaddr is", assistContracAddr);
+        console.log("addr", address(AssistContract));
+        SplitRiskV2Assist(assistContracAddr).splitRiskfn(amount_c, c);//fn call to assist, initiation,try checking using pure fn
         cBalance +=amount_c;
         emit RiskSplit(msg.sender, amount_c);
     }
@@ -133,7 +136,7 @@ contract SplitInsuranceV2{
         uint256 interestDAI = IcDAI(cy).balanceOf(me) + IERC20(cx).balanceOf(me);
         //if function call is made after teh investment call or in an appropriate time then the below function call will take care of it
         uint256 amount_eqvt = (amount_c * interestDAI) / cBalance;//how to round this
-        AssistContract.splitRiskInvestmentPeriod(amount_c, c, amount_eqvt);
+        SplitRiskV2Assist(assistContracAddr).splitRiskInvestmentPeriod(amount_c, c, amount_eqvt);
 
     }
 
@@ -206,7 +209,7 @@ contract SplitInsuranceV2{
         cBalance = cToken.balanceOf(me);
 
         //to export the math to the assist contract
-        uint256 [2] memory cPayouts = AssistContract.divestMath(cBalance, totalTranches, interest);
+        uint256 [2] memory cPayouts = SplitRiskV2Assist(assistContracAddr).divestMath(cBalance, totalTranches, interest);
         cPayoutA = cPayouts[0];
         cPayoutB = cPayouts[1];
 
@@ -243,7 +246,11 @@ contract SplitInsuranceV2{
     }
 
     function _claimFallback(uint256 tranches_to_cx, uint256 tranches_to_cy, address trancheAddress) internal{
-        AssistContract.claimFallback(tranches_to_cx, tranches_to_cy, address(this), trancheAddress, totalTranches);
+        uint256 cxBalance = IERC20(cx).balanceOf(me);
+        uint256 cyBalance = IERC20(cy).balanceOf(me);
+        require(IERC20(cx).approve(assistContracAddr, cxBalance), "first approve failed");
+        require(IERC20(cy).approve(assistContracAddr, cyBalance), "second approve failed");
+        SplitRiskV2Assist(assistContracAddr).claimFallback(tranches_to_cx, tranches_to_cy, address(this), trancheAddress, totalTranches);
         // emit Claim(msg.sender, amount_A, amount_B, 0, payout_cx, payout_cy);
     }
 
@@ -256,11 +263,13 @@ contract SplitInsuranceV2{
 
     function claim(uint256 amount_A, uint256 amount_B) public {
         uint256 cBlnce = IERC20(c).balanceOf(me);
-        IERC20(c).approve(assistContracAddr, cBlnce);
+        require(IERC20(c).approve(assistContracAddr, cBlnce), "approve failed");
 
-        AssistContract.claim(amount_A, amount_B, address(this));
+        SplitRiskV2Assist(assistContracAddr).claim(amount_A, amount_B, payable(address(this)));
 
         // emit Claim(msg.sender, amount_A, amount_B, payout_c, 0, 0);
     }
+
+    receive() external payable {}
 
 }

@@ -43,7 +43,7 @@ const Post = () => {
 // }
   
   console.log("proxyAddr globally is referneced as", proxyAddr)
-  console.log("your mom", implementationAddr)
+  console.log("imp thing", implementationAddr)
   
 
   const [walletConnected, setWalletConnected] = useState(false);
@@ -146,7 +146,7 @@ const Post = () => {
         const valueBN = utils.parseUnits(value, 18);
         const dai = new Contract("0x6b175474e89094c44da98b954eedeac495271d0f", daiAbi, signer);
         console.log("assist contract is ",await contract.AssistContract())
-        const tx2 = await dai.approve(await contract.AssistContract(), valueBN);
+        const tx2 = await dai.approve(await contract.assistContracAddr(), valueBN);
         const tx = await contract.splitRiskInvestmentPeriod(valueBN, {
           gasLimit: 1000000,
         });
@@ -159,12 +159,10 @@ const Post = () => {
         const contract = new ethers.Contract(proxyAddr, implementationAbi, signer);
         const valueBN = utils.parseUnits(value, 18);
         const dai = new Contract("0x6b175474e89094c44da98b954eedeac495271d0f", daiAbi, signer);
-        const tx3 = await dai.approve(await contract.AssistContract(), valueBN);
+        const tx3 = await dai.approve(await contract.assistContracAddr(), valueBN);
         await tx3.wait();
         //idhar tak theek hai 
         const assist = new Contract(await contract.AssistContract(), assistAbi, signer);
-        console.log("value of c in assists contract is",await assist.c())
-        console.log("contract is", contract)
         const tx = await contract.splitRisk(valueBN, {
           gasLimit: 30000000,
         });
@@ -234,6 +232,25 @@ const Post = () => {
         })
         await tx.wait(); 
       }
+
+      const invest = async () => {
+        const signer = await getProviderOrSigner(true);
+        const contract = new Contract(proxyAddr, implementationAbi, signer);
+        const tx = await contract.invest({
+          gasLimit: 1000000,
+        })
+        await tx.wait();
+      }
+
+      const divest = async () =>{
+        const signer = await getProviderOrSigner(true);
+        const contract = new Contract(proxyAddr, implementationAbi, signer);
+        const tx = await contract.divest({
+          gasLimit: 1000000,
+        })
+        await tx.wait();
+
+      }
     
       const claimInFallbackMode = async (AfromAAVE, AfromCompound, BfromAAVE, BfromCompound) =>{
         // if(proxyAddr.length == 1){await getProxyAddr()}
@@ -264,8 +281,8 @@ const Post = () => {
       const Balances = () =>{
         return (
           <div className={styles.balances}>
-            <h3>Tranche A Balance: {utils.formatUnits(userABalance.toString(), 18)}</h3>
-            <h3>Tranche B Balance: {utils.formatUnits(userBBalance.toString(), 18)}</h3>
+            <h3>Tranche SafeBet Balance: {utils.formatUnits(userABalance.toString(), 18)}</h3>
+            <h3>Tranche BearerOfAll Balance: {utils.formatUnits(userBBalance.toString(), 18)}</h3>
           </div>
         )
       }
@@ -327,6 +344,11 @@ const Post = () => {
           
           <br/>
           <Balances/>
+          {/* the invest button will only be used by chainlink keepers and not by the end user, as it is unnecessary gas costs to the customers */}
+          <div className={styles.center}>
+            <button className={styles.mybutton} onClick={invest}>Invest</button>
+          </div>
+          <br/>
           <div>
             <div className = {styles.center}>
             {/* to add something related to the progress of the wrapped tokens or so */}
@@ -386,6 +408,9 @@ const Post = () => {
         return (<div>
           <h2>The divest call is to made today, the liquidation of aDAI and cDAI into the DAI are to be made today.</h2>
           <h2>The payouts and the option to claim your DAI tokens will be available from tomorrow. :)</h2>
+          <div className={styles.center}>
+            <button className = {styles.mybutton} onClick = {divest}>Divest!</button>
+          </div>
           </div>)
         }
     
@@ -397,8 +422,8 @@ const Post = () => {
             <h2>Claim your tranche tokens and convert them into DAI</h2>
             <div>
               <div className={styles.threeDiv}>
-              <h3>You have {userABalance.toString()} SafeBet tranche tokens</h3>
-              <h3>You have {userBBalance.toString()} BearerOfAll tranche tokens</h3>
+              <h3>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>
+              <h3>You have {utils.formatUnits(userBBalance.toString(), 18)} BearerOfAll tranche tokens</h3>
             </div>
             <div className={styles.three}>
               <h3>Claim the DAI tokens that you are entitled to!</h3>  
@@ -426,7 +451,7 @@ const Post = () => {
             <div >
               <br/>
               <div className={styles.center}>
-              <h3>You have {userABalance.toString()} A tranche tokens</h3>      
+              <h3>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>      
               </div>
     
               <br/>
@@ -487,7 +512,7 @@ const Post = () => {
               <h2> Claim your SafeBet tranche tokens</h2>
     
               <div className={styles.leftdiv}>
-              <h3>You have {userABalance.toString()} SafeBet tranche tokens</h3>
+              <h3>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>
               <div>
                 How much of your SafeBet tranche tokens do you want to redeem from AAVE?
                 <br/>
@@ -504,7 +529,7 @@ const Post = () => {
               <h2>Claim your BearerOfAll tranche tokens</h2>
     
               <div className={styles.leftdiv}>
-              <h3>You have {userABalance.toString()} BearerOfAll tranche tokens</h3>
+              <h3>You have {utils.formatUnits(userBBalance.toString(), 18)} BearerOfAll tranche tokens</h3>
               <div>
                 How much of your BearerOfAll tranche tokens do you want to redeem from AAVE?
                 <br></br>

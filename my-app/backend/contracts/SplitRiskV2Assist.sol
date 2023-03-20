@@ -5,6 +5,7 @@ import "./ITranche.sol";
 import "./Tranche.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./InsuranceV2.sol";
+import "hardhat/console.sol";
 
 contract SplitRiskV2Assist {
     
@@ -29,10 +30,10 @@ contract SplitRiskV2Assist {
     uint256 cyPayout;
 
     constructor (address _c, address _cx, address _cy) {
-        S = block.timestamp + 60*60; // +3 minutes// add T1, T2, T3 as the input
-        T1 = S + 60*7; // +6minutes
-        T2 = T1 + 420; // +2minutes
-        T3 = T2 + 500; // +3minutes
+        S = block.timestamp + 60*2; // +3 minutes// add T1, T2, T3 as the input
+        T1 = S + 60*2; // +6minutes
+        T2 = T1 + 120; // +2minutes
+        T3 = T2 + 120; // +3minutes
 
         A = address(new Tranche("Tranche A", "A"));
         B = address(new Tranche("Tranche B", "B"));
@@ -42,7 +43,7 @@ contract SplitRiskV2Assist {
         cy = _cy;
     }
 
-    function splitRisk(uint256 amount_c, address _c) public{
+    function splitRiskfn(uint256 amount_c, address _c) public{
         require(block.timestamp < S, "split: no longer in issuance period");
         require(amount_c > 1, "split: amount_c too low");
 
@@ -50,6 +51,7 @@ contract SplitRiskV2Assist {
             // Only accept even denominations
             amount_c -= 1;
         }
+        console.log("idhar tak theek hai");
         require(
             IERC20(c).transferFrom(tx.origin, msg.sender, amount_c),
             "split: failed to transfer c tokens"
@@ -93,7 +95,7 @@ contract SplitRiskV2Assist {
         return [cPayoutA, cPayoutB];
     }
 
-    function claim(uint256 amount_A, uint256 amount_B, address addr) public {
+    function claim(uint256 amount_A, uint256 amount_B, address payable addr) public {
         SplitInsuranceV2 tempInsurance = SplitInsuranceV2(addr);
         bool isInvested = tempInsurance.isInvested();
         bool inLiquidMode = tempInsurance.inLiquidMode();
@@ -129,7 +131,7 @@ contract SplitRiskV2Assist {
         }
 
         if (payout_c > 0) {
-            IERC20(c).transfer(tx.origin, payout_c);
+            IERC20(c).transferFrom(msg.sender, tx.origin, payout_c);
         }
     }
 
@@ -161,7 +163,7 @@ contract SplitRiskV2Assist {
 
             tranche.burn(tx.origin, tranches_to_cx);
             payout_cx = tranches_to_cx * cxPayout / RAY;
-            cxToken.transfer(tx.origin, payout_cx);
+            cxToken.transferFrom(msg.sender, tx.origin, payout_cx);
         }
 
         if (tranches_to_cy > 0) {
@@ -174,7 +176,7 @@ contract SplitRiskV2Assist {
 
             tranche.burn(tx.origin, tranches_to_cy);
             payout_cy =  tranches_to_cy * cyPayout / RAY;
-            cyToken.transfer(tx.origin, payout_cy);
+            cyToken.transferFrom(msg.sender, tx.origin, payout_cy);
         }
     }
 

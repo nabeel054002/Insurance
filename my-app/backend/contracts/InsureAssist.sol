@@ -47,7 +47,7 @@ contract Proxy {
             }
         }
     }
-    receive() external payable {}
+    // receive() external payable {}
 
 }
 // keep separate owners for implementation and proxy, TransparentUpgradeableProxy
