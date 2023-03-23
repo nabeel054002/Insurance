@@ -43,20 +43,10 @@ async function main() {
     await tx4.wait();
 
     console.log("have deployed the proxy contracts and hence initialized them as well")
-
-    // console.log("deployed proxy for risk spectrum contract", await contract.riskSpectrumContracts(deployedRiskSpectrumContract.address))
-    // const tx = await contract.returnData(deployedRiskSpectrumContract.address);
-    // console.log(await tx.wait());
-
-    // const proxyContract = new ethers.Contract(await contract.riskSpectrumContracts(secondDeployedSpectrumContract.address), proxyAbi, wallet);
-    // console.log("proxy contract", proxyContract.address)
-    // const implementation = await proxyContract.implementation();//why is this giving address of assist, but in console.log solidity it is giving the actual implementation contract`s address
-    // console.log("implementation", implementation);
-
-    // console.log("trial to see if i get the struct");
-
     console.log(`const assistAddr = "${deployedAssistContract.address}"`);
     console.log(`const factoryAddr = "${deployedFactory.address}"`);
+
+    //factory deploys the proxy contract and the exchange contract
 
 }
 

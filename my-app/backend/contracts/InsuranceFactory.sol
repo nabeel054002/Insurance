@@ -4,61 +4,70 @@ pragma solidity ^0.8.17;
 import "./InsuranceV2.sol";
 import "./SplitRiskV2Assist.sol";
 import "./InsureAssist.sol";
+import "./trancheAMM.sol";
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract RiskSpectrumFactory {
+
+    using SafeMath for uint256;
 
     struct riskSpectrum {
         string c;
         string cx;
         string cy;
     }
-    
-    mapping(address => riskSpectrum) public detailsOfRiskSpectrums;
+
+    struct Liquidity {
+        uint256 balanceA;
+        uint256 balanceB;
+    }
+
+    mapping (address => Liquidity) public liquidity;
     mapping(address => address) public riskSpectrumContracts;
+    mapping(address => address) public riskSpectrumExchangeContracts;
     address [] public riskSpectrumContractsArray;
     uint32 public riskSpectrumContractsArrayLength;
     //readability is important, so i will use the following naming convention, "c, 2 protocols"
     //to access it using dynamic routing do i have to generate a hash, unique value that can address the different contracts 
 
+
+    event LiquidityAdded(address indexed liquidityProvider, uint256 amountA, uint256 amountB);
+    event LiquidityRemoved(address indexed liquidityProvider, uint256 amountA, uint256 amountB);
+    event SwapExecuted(address indexed user, uint256 amountAOut, uint256 amountBOut, uint256 amountAIn, uint256 amountBIn);
+
     function deployRiskSpectrum (address payable Implementation, address Assist) public{
-        console.log("About to deploy");
         SplitInsuranceV2 newRiskSpectrum = SplitInsuranceV2(Implementation);
-        console.log("newRiskSpectrum works");
-        bytes memory constructData = abi.encodeWithSignature("initialize(address)", Assist);//is this valid?
-        console.log("constructData works");
+        bytes memory constructData = abi.encodeWithSignature("initialize(address)", Assist);
         Proxy proxy = new Proxy(constructData, Implementation);
-        console.log("proxy deployed");
+        SplitInsuranceV2 proxyI = SplitInsuranceV2(payable(address(proxy)));
+        Exchange exchange = new Exchange(proxyI.A(), proxyI.B());
+        console.log("Implementation", Implementation);
+        riskSpectrumExchangeContracts[Implementation] = address(exchange);
+        console.log("riskSpectrumExchangeContracts[Implementation]", riskSpectrumExchangeContracts[Implementation]);
         riskSpectrumContracts[Implementation] = address(proxy);
-        console.log("riskspectrumcontracts thing");
-        riskSpectrum memory imp = returnData(payable(Implementation));
-        console.log("imp works");
-        detailsOfRiskSpectrums[address(proxy)] = imp;
-        console.log("details of riskspectrumcontracts thing");
+        // riskSpectrum memory imp = returnData(payable(Implementation));
+        // detailsOfRiskSpectrums[address(proxy)] = imp;
         riskSpectrumContractsArray.push(address(proxy));
-        console.log("riskspectrumcontractsarray thing");
         riskSpectrumContractsArrayLength++;
     }
 
-    function returnData (address payable _implementation) public returns(riskSpectrum memory){
+    function returnData (address payable _implementation) public view returns(riskSpectrum memory){
         // returns(riskSpectrum memory)
         SplitInsuranceV2 proxy = SplitInsuranceV2(payable(riskSpectrumContracts[_implementation]));   
         //the issue with the previous thign was implementation contract was not initialized
         //how to read from a proxy contract
-        console.log("implementation recieved", proxy.c());
         ERC20 c = ERC20(proxy.c());
         ERC20 cx = ERC20(proxy.cx());
         ERC20 cy = ERC20(proxy.cy());
-        console.log("c, cx and cy");
-        console.log("name of c token is", c.name());
         riskSpectrum memory returnsThis;
         returnsThis.c = c.name();
-        console.log("c.name() works");
         returnsThis.cx = cx.name();
-        console.log("cx.name() works");
         returnsThis.cy = cy.name();
-        console.log("cy.name() works");
         return returnsThis;
     }
+
+//removed the one written by them, to interact with AMM for each RiskSpectrum contact it`s smart contract
+
 }

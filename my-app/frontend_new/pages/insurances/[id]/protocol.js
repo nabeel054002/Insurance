@@ -1,10 +1,10 @@
 import Web3Modal from "web3modal"
 import Head from "next/head";
 import { useRouter } from 'next/router';
-import styles from "../../styles/Home.module.css";
+import styles from "../../../styles/Home.module.css";
 import {useState, useEffect, useRef} from "react";
 import {BigNumber, Contract, ethers, utils} from "ethers";
-import { factoryAddr, factoryAbi, implementationAbi, TrancheAbi, daiAbi, assistAbi } from "../../constantsFactory";
+import { factoryAddr, factoryAbi, implementationAbi, TrancheAbi, daiAbi, assistAbi } from "../../../constantsFactory";
 
 const Post = () => {
 
@@ -20,6 +20,8 @@ const Post = () => {
   const router = useRouter()
   const { id } = router.query;
   let slicerIdx = 0;
+
+  console.log("ID is this", id)
 
   for(let i = 0; i < id.length; i++){
     if(id.substring(i,i+5) === "PAUSE"){
@@ -615,6 +617,9 @@ const Post = () => {
               {tTwo.toString()} is ttwo
               {tThree.toString()} is t three
               {cBalance.toString()} is C Balance
+
+              implementation addr {implementationAddr}
+              proxyaddr {proxyAddr}
               <div>
               </div>
             </div>

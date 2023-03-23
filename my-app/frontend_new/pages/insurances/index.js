@@ -86,7 +86,8 @@ export default function Home(signerInput) {
     console.log("getRiskSpectrums entered")
     const signer = await getProviderOrSigner(true);
     console.log("signer in the getriskspectrums fn is ",signer)
-    const factoryContract = new Contract(factoryAddr, factoryAbi, signer);
+    const provider = await getProviderOrSigner();
+    const factoryContract = new Contract(factoryAddr, factoryAbi, provider);
     console.log("asdads")
     console.log("factory contract is",factoryContract)
     let arrLength = await factoryContract.riskSpectrumContractsArrayLength() .catch((err) => {
@@ -112,7 +113,7 @@ export default function Home(signerInput) {
         proxyContracts.push(proxyContract.address);
         const implementationContract = new Contract(await proxyContract.implementation(), proxyAbi, signer);
         implementationContracts.push(implementationContract.address);
-        const description = await factoryContract.detailsOfRiskSpectrums(proxyContract.address);
+        const description = await factoryContract.returnData(implementationContract.address);
         console.log(description.slice(0,3));
         descriptionArr.push(description);
     }
@@ -121,6 +122,8 @@ export default function Home(signerInput) {
     setImplementationArr(implementationContracts);
     setDescriptionArr(descriptionArr);
     setRiskSpectrumLength(arrLength);
+    console.log("imp addr", implementationContracts)
+    console.log("proxy addr", proxyContracts)
   }
 
   const availableRiskSpectrums = () => {
