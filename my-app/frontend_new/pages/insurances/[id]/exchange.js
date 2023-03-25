@@ -8,6 +8,7 @@ import { relativeTimeRounding } from "moment";
 import Web3Modal, { getProviderDescription } from "web3modal"
 import Link from "next/link";
 import { useRouter } from 'next/router';
+import { TrancheAbi } from "@/constants";
 
 // const web3 = require('web3')
 
@@ -17,6 +18,7 @@ export default function Home(signerInput) {
     const router = useRouter()
     const { id } = router.query;
     let slicerIdx = 0;
+    // let 
   
     console.log("ID is this", id)
   
@@ -33,9 +35,13 @@ export default function Home(signerInput) {
     const [description, setDescription] = useState([null, null]);
     const [exchangeAddr, setExchangeAddr] = useState("")
     const [walletConnected, setWalletConnected] = useState(false);
-    const [balanceOne, setBalanceOne] = useState(zero);
-    const [balanceTwo, setBalanceTwo] = useState(zero);
-    const [blncDEX, setBlncDEX] = useState(zero);
+    let balanceOne = 0;
+    let balanceTwo = 0;
+    let blncDEX = 0;
+    const [sfbtBalance, setSfbtBalance] = useState(zero);
+    const [bflBalances, setBflBalance] = useState(zero);
+    const [lpBalance,setLpBalance] = useState(zero)
+
     // const [Div, setDiv] = useState(null);
     const web3ModalRef = useRef();
 
@@ -50,6 +56,7 @@ export default function Home(signerInput) {
           connectWallet().then(async () => {
             getExchangeAddr();
             getDescription();
+            getBalances();
           });
         }
     }, [walletConnected]);
@@ -90,11 +97,23 @@ export default function Home(signerInput) {
         setDescription(description);
     }
 
+    const getBalances = async() => {
+        const signer = await getProviderOrSigner(true);
+        const contract = new Contract(proxyAddr, implementationAbi, signer);
+        const ATranche = new Contract(await contract.A(), TrancheAbi, signer);
+        const BTranche = new Contract(await contract.B(), TrancheAbi, signer);
+        setBflBalance(await BTranche.balanceOf(await signer.getAddress()));
+        setSfbtBalance(await ATranche.balanceOf(await signer.getAddress()));
+        const exchange = new Contract(exchangeAddr, exchangeAbi, signer);
+        const lpBalance = await exchange.balanceOf(await signer.getAddress());
+        setLpBalance(lpBalance)
+    }
+
     const Balances = () => {
         return (<div>
             <div className = {styles.balancesDEX}>
-                <h4>Balance of {description[1]} is </h4>
-                <h4>Balance of {description[0]} is </h4>
+                <h4>Balance of SafeBet tranches is {sfbtBalance.toString()}</h4>
+                <h4>Balance of BearerOfAll tranches is {bflBalances.toString()}</h4>
             </div>
         </div>)
     }
@@ -104,7 +123,7 @@ export default function Home(signerInput) {
         const factoryContract = new Contract(factoryAddr, factoryAbi, signer);
         const exchangeAddr = await factoryContract.riskSpectrumExchangeContracts(implementationAddr);
         const exchangeContract = new Contract(exchangeAddr, exchangeAbi, signer);
-        const tx = await exchangeContract.pool(balanceOne, balanceTwo);
+        const tx = await exchangeContract.pool(utils.parseUnits(balanceOne, 18), utils.parseUnits(balanceTwo, 18));
         await tx.wait();
         //addLiquidity(address liquidityProvider, uint256 amountA, uint256 amountB)
     }
@@ -114,7 +133,7 @@ export default function Home(signerInput) {
         const factoryContract = new Contract(factoryAddr, factoryAbi, signer);
         const exchangeAddr = await factoryContract.riskSpectrumExchangeContracts(implementationAddr);
         const exchangeContract = new Contract(exchangeAddr, exchangeAbi, signer);
-        const tx = await exchangeContract.swapInputA(blncDEX);
+        const tx = await exchangeContract.swapInputA(utils.parseUnits(blncDEX, 18));
         await tx.wait();
     }
 
@@ -123,7 +142,7 @@ export default function Home(signerInput) {
         const factoryContract = new Contract(factoryAddr, factoryAbi, signer);
         const exchangeAddr = await factoryContract.riskSpectrumExchangeContracts(implementationAddr);
         const exchangeContract = new Contract(exchangeAddr, exchangeAbi, signer);
-        const tx = await exchangeContract.swapInputB(blncDEX);
+        const tx = await exchangeContract.swapInputB(utils.parseUnits(blncDEX, 18));
         await tx.wait();
     }
 
@@ -145,16 +164,17 @@ export default function Home(signerInput) {
     const Div = () => {
         if(count==0)
         return(
-             <div>
+             <div className={styles.Div}>
             <h2 className={styles.pool}>Pool In your tranche Tokens to recieve liquidity tokens</h2>
+            <h3 className={styles.pool}>You have {lpBalance.toString()} LP tokens for this RiskSpectrum DEX</h3>
             <div className = {styles.balancesDEX}>
-            <input placeholder = {description[1]}
+            <input type="number" placeholder = {description[1]}
             onChange = {(event) => {
-                setBalanceOne(event.target.value)
+                balanceOne = (event.target.value)
             }}></input>
-            <input placeholder = {description[2]}
+            <input type="number" placeholder = {description[2]}
             onChange = {(event) => {
-                setBalanceTwo(event.target.value);
+                balanceTwo = (event.target.value);
             }}></input> 
             
             </div>
@@ -168,20 +188,41 @@ export default function Home(signerInput) {
                 </div>
             </div>
         </div>)
-        else{ return(<div className={styles.thing}>
-                <h2 className={styles.pool}>Enter the amount that you want to swap, input as token {description[0]} or as token {description[1]}</h2>
+        else if(count == 1){ return(<div className={styles.Div}>
+                <h2 className={styles.pool}>Enter the amount that you want to swap, input as SafeBet tranches or as BearerOfAll tranches</h2>
                 <div className={styles.balancesDEX}>
                     <input onChange = {(event) => {
-                        setBlncDEX(event.target.value);
+                        blncDEX = (event.target.value);
                     }}placeholder = "Input amount to swap"></input>
                 </div>
                 <div className={styles.balancesDEX}>
-                    <button onClick = {swapInputB} className = {styles.mybutton}>Swap for {description[1]}!</button>
+                    <button onClick = {swapInputB} className = {styles.mybutton}>Swap for SafeBet Tranches!</button>
                     {/* swapinputb */}
-                    <button onClick = {swapInputA} className = {styles.mybutton}>Swap for {description[2]}!</button>
+                    <button onClick = {swapInputA} className = {styles.mybutton}>Swap for BearerOfAll Tranches!</button>
                 </div>
             </div>)
-        }  
+        }  else {
+            return (
+                <div className={styles.Div}>
+            <h2 className={styles.pool}>Burn your LP Tokens to recieve your tranches back!</h2>
+            <div className={styles.pool}>
+                <h3>You have {lpBalance.toString()} LP tokens for this RiskSpectrum DEX</h3>
+                <h3>You can burn your tokens, enter the amount below</h3>
+            </div>
+            
+            <div className = {styles.balancesDEX}>
+            <input type ="number" placeholder = "Enter amount to burn"
+            onChange = {(event) => {
+                balanceOne = (event.target.value)
+            }}></input>
+            
+            
+            </div>
+                <div className={styles.balancesDEX}>
+                    <button className = {styles.mybutton} onClick = {poolLiquidity}>Provide Liquidity!</button>
+                </div>
+        </div>)
+        }
     }
     return (
         <div>
@@ -196,28 +237,27 @@ export default function Home(signerInput) {
         </Head>
         <main className={styles.main}>
             <div>
-                <h1>{exchangeAddr}</h1>
+                {/* <h1>{exchangeAddr}</h1> */}
                 <div>
                     <div className={styles.center}>
                         <h1>Decentralized Exchange</h1>
                     </div>
-                <div className={styles.investingToken}><h5>Name of investing Token: {description[0]}</h5></div>
+                <div className={styles.investingToken}><h3>Name of investing Token: {description[0]}</h3></div>
                 <div className={styles.protocolsInRiskSpectrum}>
-                    <h5>Name of protocols are:</h5>
-                    <h5>{description[1]}</h5>
-                    <h5>{description[2]}</h5>
+                    <h3>Name of protocols are:</h3>
+                    <h3>{description[1]}</h3>
+                    <h3>{description[2]}</h3>
                 </div>
               </div>
             </div>
             <br/><Balances/>
-            <div className = {styles.balancesDEX}>
-                <nav>
+                <nav className={styles.aboveOptionsDEX}>
                 <ul className={styles.optionsDEX}>
-                    <li><button className = {styles.mybutton} onClick = {() => {setCount(0)}}>Provide Liquidity</button></li>
-                    <li><button className = {styles.mybutton} onClick = {() => {setCount(1)}}>Swap</button></li>
+                    <li className={styles.optionsDEXli}><button className = {count==0?styles.chosenDexbtn:styles.dexbtn} onClick = {() => {setCount(0)}}>Provide Liquidity</button></li>
+                    <li className={styles.optionsDEXli}><button className = {count==1?styles.chosenDexbtn:styles.dexbtn} onClick = {() => {setCount(1)}}>Swap</button></li>
+                    <li className={styles.optionsDEXli}><button className={count==2?styles.chosenDexbtn:styles.dexbtn} onClick={() => {setCount(2)}}>Remove Liquidity</button></li>
                 </ul>
             </nav>
-            </div>
             <Div/>
         </main>
         </div>

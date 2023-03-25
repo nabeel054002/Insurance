@@ -6,16 +6,15 @@ const Footer = () =>{
         <div className={styles.footer}>
              <footer>
               <div className={styles.footerContent}>
-                  <div className = {styles.footerSocials}>
+                  <div>
                     <h2>
                       RiskSpectrum
                     </h2>
                     <Link href="instagram.com">Instagram</Link>
                     <Link href="twitter.com">Twitter</Link>
                   </div>
-                  <div className = {styles.footerDescription}>
-                    <h2>Description</h2>
-                    <p></p>
+                  <div >
+                    <h2>Made with &#10084;<br/> by Nabeel</h2>
                   </div>
               </div>
              </footer>

@@ -1,11 +1,13 @@
 import styles from "../styles/Home.module.css"
 import { useEffect, useState } from "react";
-
+import {logo} from "../../public/logo.png"
+import {wallet} from "../../public/wallet.png"
 
 const Header = (signerInput, {children}) =>{
     const [signer, setSigner] = useState(null);
     const [address, setAddress] = useState("");
 
+    // console.log("childre", children)//did not give anything
 
     useEffect( () => {
         if (signerInput) {
@@ -16,22 +18,21 @@ const Header = (signerInput, {children}) =>{
 
     const getAddress = async () => {
         if(signer){
-            console.log("address", address)
             const address = await signer.getAddress();
             setAddress(address);
         }
         
     }
     return (
-        <div>
-            <div className={styles.container}>
-                <div className={styles.header}>
-                <h1 className={styles.topName}>RiskSpectrum</h1>    
-                <h1 className={styles.addrName}>{(address).substr(0,5) + "..." + address.substr(address.length-4, )}</h1>        
+        <div className={styles.Header}>
+            <img className = {styles.headerName} src="/logo.png"></img>
+            <div className={styles.headerAddr}>
+                <div className={styles.wallet}>
+                    <img src="/wallet.png"></img>
+                    <p className={styles.addr}>{address.substr(0, 6) + "..." + address.substr(address.length - 4)}</p>
                 </div>
                 
             </div>
-        {children}
         </div>
     )
 }

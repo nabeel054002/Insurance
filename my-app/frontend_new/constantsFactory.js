@@ -1909,6 +1909,6 @@ const assistAbi = [
     "type": "function"
   }
 ]
-const assistAddr = "0x7036124464A2d2447516309169322c8498ac51e3"
-const factoryAddr = "0x9e7F7d0E8b8F38e3CF2b3F7dd362ba2e9E82baa4"
+const assistAddr = "0xA3f7BF5b0fa93176c260BBa57ceE85525De2BaF4"
+const factoryAddr = "0x22b1c5C2C9251622f7eFb76E356104E5aF0e996A"
 module.exports = {proxyAbi, factoryAbi, assistAddr, factoryAddr, implementationAbi, TrancheAbi, daiAbi, assistAbi, exchangeAbi}

@@ -48,6 +48,12 @@
   flex-wrap: wrap;
 }
 
+.chosenDexbtn{
+  width: 300px;
+  background-color: rgb(187, 36, 36);
+  color:white;
+}
+
 .descriptionOnlyA {
   display: flex;
   flex-direction: column;
@@ -169,6 +175,30 @@
 
 .optionsDEX{
   display: flex;
+  width: 170vh;
+  height: 30px;
+  justify-content: left;
+}
+
+.aboveOptionsDEX{
+  height:30px;
+}
+
+.optionsDEXli{
+  height: max-content;
+}
+
+.Div{
+  border: #111;
+  border-width: 1px;
+  border-style: dotted;
+}
+
+.dexbtn{
+  border-radius: 7%;
+  width: 300px;
+  background-color: maroon;
+  color: white;
 }
 
 .enterFeed {
@@ -303,14 +333,16 @@
 
 .footerContent{
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  width: 100%;
+  justify-content: space-around;
 }
 
 .footerSocials{
   text-align: left;
   color: white;
+}
+
+.optionsDEXli{
+  list-style-type: none;
 }
 
 .footerDescription{

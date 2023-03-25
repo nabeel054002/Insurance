@@ -558,7 +558,7 @@ const Post = () => {
       const Screen = () => {
         if (blockTimeStamp < S){
           return(
-            <SScreen/>
+            <TThree/>
           )
         }
         //get aDAI and cDAI balance
@@ -611,15 +611,6 @@ const Post = () => {
           <main className={styles.main}>
             <div>
               <Screen/>
-              {blockTimeStamp} is blocktimestamp
-              {S.toString()} is S
-              {tOne.toString()} is tone
-              {tTwo.toString()} is ttwo
-              {tThree.toString()} is t three
-              {cBalance.toString()} is C Balance
-
-              implementation addr {implementationAddr}
-              proxyaddr {proxyAddr}
               <div>
               </div>
             </div>
