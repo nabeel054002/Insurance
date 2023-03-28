@@ -91,10 +91,6 @@ div.contentWrite p{
   align-items: center;
 }
 
-/* div.buttonsWrite button {
-  width: 40%;
-} */
-
 .varyRisk{
   width: 40%;
   height: 50px;
@@ -117,6 +113,246 @@ div.buttonsWrite button p{
   letter-spacing: -0.05em;
   line-height: 150%;
   font-weight: bold;
+}
+
+.riskSpectrum {
+  display: flex;
+  border-radius: 7%;
+  border-style: solid;
+  border-color: #c7c6c6;
+  border-width: 1px;
+  width: 900px;
+  height: 200px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.riskSpectrumLeft{
+  background-color: #252525;
+  border-top-left-radius: 7%;
+  border-bottom-left-radius: 7%;
+  width: 50%;
+}
+
+.riskSpectrumRight{
+  background-color: #EAEAEA;
+  border-top-right-radius: 7%;
+  border-bottom-right-radius: 7%;
+  width: 50%;
+}
+
+.protocolName {
+  display: inline-block;
+  font-family: 'Space-Mono', monospace;
+  text-transform: uppercase;
+  font-size: 12px;
+  border-style: solid;
+  border-color: #ADADAD;
+  color: #393838;
+  background-color: #d6d6d6;
+  border-radius: 7%;
+  border-width: 1.5px;
+  margin-top: 15px;
+  padding: 10px
+}
+
+.riskSpectrumRightContent {
+  margin: 30px
+}
+.riskSpectrumLeftContent {
+  margin: 30px
+}
+
+.protocolsAre{
+  font-family: 'Space-Mono', monospace;
+  font-size: 13px;
+  font-weight:300;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #525252;
+}
+
+.titleRiskSpectrum {
+  font-family: 'Space-Mono', monospace;
+  font-size: 20px;
+  font-weight: 100;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #bdbcbc;
+}
+
+.investingToken{
+  font-family: 'Space-Mono', monospace;
+  font-size: 13px;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 30px;
+  color: #bdbcbc;
+}
+
+.investingTokenName{
+  font-family: 'Space-Mono', monospace;
+  font-size: 25px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #bdbcbc;
+}
+
+.titleOptions{
+  font-family: 'Space-Mono', monospace;
+  text-transform: uppercase;
+  text-align: center;
+  letter-spacing: 0.1em;
+  font-size: 40px;
+}
+
+.insurancesDetail{
+  padding-top: 30px;
+  font-size: 20px;
+  font-family:'Libre-Franklin', sans-serif;
+  text-align: center;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+  padding-top: 30px;
+  padding-bottom: 15px;
+}
+
+.secondInsurancesDetail{
+  font-family: 'Libre-Franklin', sans-serif;
+  font-size: 20px;
+  padding-left:23vw;
+  padding-right:23vw;
+  width: 100vw;
+  text-align: center;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.contentInsurancePg{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-top:100px;
+}
+
+.buttons{
+  padding-top:30px;
+}
+
+.balances{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  width:100vw;
+}
+
+.inputWindow{
+  display: flex;
+  flex-direction: column;
+  padding: 0%;
+}
+
+.balance{
+  background-color: white;
+  border-radius: 10px;
+  font-family: 'Space-Mono', monospace;
+  font-size: 20px;
+  text-transform: uppercase;
+  width: max-content;
+  padding: 10px;
+  text-align: center;
+}
+
+.input{
+  width: 60vw;
+  margin-left:20vw;
+  height: 4vh;
+  border-radius: 10px;
+  padding:1vw;
+  font-size: 20px;
+}
+
+.inputMini{
+  width:400px;
+  height: 3vh;
+  border-radius: 10px;
+  padding: 0.5vw;
+  font-size: 16px;
+}
+
+.dexContent{
+  margin-top: -88px;
+  width: 60vw;
+  height:300px;
+  border-style: solid;
+  border-color: #bdbcbc;
+  border-top-left-radius: 5%;
+  border-top-right-radius: 5%;
+  border-bottom-left-radius: 5%;
+  border-bottom-right-radius: 5%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.inputBox{
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.centerRow {
+  display: flex;
+  flex-direction: row;
+  width: 100vw;
+  justify-content: center;
+}
+
+.miniButtons{
+  background-color: #E87070;
+  height:30px;
+  width:250px;
+  border-radius: 10%;
+  font: 'Space-Mono', monospace;
+  text-transform: uppercase;
+  font-size: 14px;
+  color: white;
+  letter-spacing: 0.01em;
+  font-weight: 400;
+}
+
+.miniButtonsSelected{
+  font-weight: 800;
+  background-color: #e35353;
+  border-bottom-left-radius: 0%;
+  border-bottom-right-radius: 0%;
+  border-bottom-style: none;
+  height:30px;
+  width:250px;
+  border-radius: 10%;
+  font: 'Space-Mono', monospace;
+  text-transform: uppercase;
+  font-size: 14px;
+  color: white;
+  letter-spacing: 0.01em;
+}
+
+.mybutton {
+  background-color: #E87070;
+  height:50px;
+  width:230px;
+  border-radius: 10%;
+  margin: 30px;
+  font: 'Space-Mono', monospace;
+  text-transform: uppercase;
+  font-size: 18px;
+  color: white;
+  letter-spacing: 0.005em;
+  font-weight: 800;
 }
 /* previous css */
 

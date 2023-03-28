@@ -16,12 +16,24 @@ export default function Home(signerInput) {
   const router = useRouter()
   const { id } = router.query;
 
+  let slicerIdx = 0;
+  let proxyAddr ="";
+
+
   const protocol = id + "/protocol";
   const exchange = id + "/exchange";
+  for(let i = 0; i < id.length; i++){
+    if(id.substring(i,i+5) === "PAUSE"){
+        slicerIdx = i;
+    }
+}
+const implementationAddr = id.substring(0, slicerIdx)
+proxyAddr = id.substring(slicerIdx+5, id.length)
 
   // const [signer, setSigner] = useState(null);
   const [availableInsurances, setAvailableInsurances] = useState([]);
   const [riskSpectrumLength, setRiskSpectrumLength] = useState(0);
+  const [description, setDescription] = useState([])
   const [proxyArr, setProxyArr] = useState([]);
   const [implementationArr, setImplementationArr] = useState([]);
   const [descriptionArr, setDescriptionArr] = useState([]);
@@ -42,6 +54,7 @@ export default function Home(signerInput) {
     
           connectWallet().then(async () => {
             setSigner(await getProviderOrSigner(true));
+            getDescription();
           });
         }
       }, [walletConnected]);
@@ -54,6 +67,14 @@ export default function Home(signerInput) {
         console.error(error);
     }
     };
+
+    const getDescription = async () => {
+      const signer = await getProviderOrSigner(true);
+      const factoryContract = new Contract(factoryAddr, factoryAbi, signer);
+      const description = await factoryContract.returnData(implementationAddr);
+      console.log(description)
+      setDescription(description);
+  }
 
     const getProviderOrSigner = async (needSigner = false) => {
         const provider = await web3ModalRef.current.connect();
@@ -88,7 +109,10 @@ export default function Home(signerInput) {
       </Head>
       <main className={styles.main}>
         <div>
-          <h2>This is for ....</h2>
+          <h2>This is a RiskSpectrum</h2><h3>For the investing token as {description[0]}</h3>
+          <h3>to invest in the protocols, {description[1]} and {description[2]}</h3><br></br>
+          <h4>You can get the tranches, the payouts and check the status of the protocol in the Protocol page</h4>
+          <h4>You can vary your risk exposure by swapping your SafeBet or your<br></br> BearerOfAll tokens for the other, BearerOfAll or SafeBet respectively.</h4>
           <div>
             <Link href = {protocol}><button className = {styles.mybutton}>Protocol</button>
             </Link>

@@ -21,7 +21,7 @@ contract Exchange is ERC20{
     function pool(uint256 amountA, uint256 amountB) public {
         require(ITranche(tokenA).transferFrom(tx.origin, me, amountA), "trancheA not transferred");
         require(ITranche(tokenB).transferFrom(tx.origin, me, amountB), "trancheB not transferred");
-        if(ITranche(tokenA).balanceOf(me) == 0){
+        if(ITranche(tokenA).balanceOf(me) - amountA == 0){
             _mint(tx.origin, amountA);
         } else {
             uint256 amt = amountB.mul((ITranche(tokenA).balanceOf(me)).sub(amountA)).div((ITranche(tokenA).balanceOf(me)).sub(amountA));
@@ -42,9 +42,10 @@ contract Exchange is ERC20{
     }
 
     function liquidate (uint256 amount) public {
-        require(ITranche(tokenA).transfer(tx.origin, amount), "trancheA not transferred");
-        uint amt = amount.mul((ITranche(tokenB).balanceOf(me))).div((ITranche(tokenA).balanceOf(me)).add(amount));
-        require(ITranche(tokenB).transfer(tx.origin, amt), "trancheB not transferred");
+        uint256 amountA = amount.mul(ITranche(tokenA).balanceOf(me)).div(totalSupply());
+        uint256 amountB = amount.mul(ITranche(tokenB).balanceOf(me)).div(totalSupply());
+        require(ITranche(tokenA).transfer(tx.origin, amountA), "trancheA not transferred");
+        require(ITranche(tokenB).transfer(tx.origin, amountB), "trancheB not transferred");
         _burn(tx.origin, amount);
     }
 

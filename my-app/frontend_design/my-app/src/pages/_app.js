@@ -4,7 +4,6 @@ import {useRef, useEffect, useState, React} from "react"
 import Web3Modal from "web3modal"
 import {ethers} from "ethers";
 import Header from "../components/Header";
-import Footer from "../components/Footer";
 
 export default function App({ Component, pageProps }) {
   const [signer, setSigner] = useState(null);
@@ -59,6 +58,5 @@ export default function App({ Component, pageProps }) {
   return (<div>
     <Header prop1 ={signer}/>
     <Component prop1 = {signer} prop2 = {web3provider} {...pageProps} />
-    <Footer />
   </div>);
 }

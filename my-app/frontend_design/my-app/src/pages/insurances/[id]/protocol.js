@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import styles from "../../../styles/Home.module.css";
 import {useState, useEffect, useRef} from "react";
 import {BigNumber, Contract, ethers, utils} from "ethers";
-import { factoryAddr, factoryAbi, implementationAbi, TrancheAbi, daiAbi, assistAbi } from "../../../constantsFactory";
+import { factoryAddr, factoryAbi, implementationAbi, TrancheAbi, daiAbi, assistAbi } from "../../../constants";
 
 const Post = () => {
 
@@ -283,135 +283,126 @@ const Post = () => {
       const Balances = () =>{
         return (
           <div className={styles.balances}>
-            <h3>Tranche SafeBet Balance: {utils.formatUnits(userABalance.toString(), 18)}</h3>
-            <h3>Tranche BearerOfAll Balance: {utils.formatUnits(userBBalance.toString(), 18)}</h3>
+            <h3 className={styles.balance}>Tranche SafeBet Balance: {utils.formatUnits(userABalance.toString(), 18)}</h3>
+            <h3 className={styles.balance}>Tranche BearerOfAll Balance: {utils.formatUnits(userBBalance.toString(), 18)}</h3>
           </div>
         )
       }
     
       //so by doing a function call the state is changing then handle that, and render differently, if it rendered so, but dont handle the change that occurs when the user lets the site open for too long
       const SScreen = ()=>{
-        return (<div className={styles.topFirst}>
-          <div className={styles.center}>
-            <h2>Vary your risk exposure using RiskSpectrum</h2>
-          </div>
-          
-          <br/>
-          <h4>RiskSpectrum is a decentralized DeFi risk derivative protocol on the Mumbai network.</h4>
-          <h4>This page is to provide 2 tranche tokens to those that deposit their DAI for their investments in aDAI and cDAI</h4>  
-          <br/>
-          <Balances/>
-          <br/>
+        return (<div>
+            <h2 className={styles.titleOptions}>Vary your risk exposure using RiskSpectrum</h2>
+            <br/>
+            <h4 className={styles.secondInsurancesDetail}>RiskSpectrum is a decentralized DeFi risk derivative protocol on the Mumbai network.<br></br>This page is to provide 2 tranche tokens to those that deposit their DAI for their investments in aDAI and cDAI</h4>  
+            <br/>
+            <Balances/>
+            <br/>
     
-          <div>
-            <div className = {styles.centerCol}>
-              <div className={styles.center}>
-              <h4>To vary your risk exposure for your DAI investments in AAVE and Compound</h4>
-              </div>
-              <div className={styles.center}>
-                <h5>Deposit your DAI into the RiskSpectrum protocol</h5><br/>
-              </div>
-              <div className={styles.center}>
-                <p className={styles.contentFirst}>A protocol in which a particular token is pooled in, which are used to buy 
-              the return accruing interest in 2 different protocols. In exchange of pooling the tokens, there are 50% SafeBet 
-              tranche tokens and 50% BearerOfAll tranche tokens that get issued to the end user that pooled the tokens, the 
-              SafeBet tranche tokens have lower risk and has a really less chance of default and the BearerOfAll tranche is 
-              the opposite. The risk mitigation happens through trading of SafeBet tranche and BearerOfAll tranche tokens and 
-              not by the protocol giving you the tranche tokens.</p>
-              </div>
-              <div className={styles.center}>
-                <input placeholder = "Enter DAI Amount" className = {styles.input} type="number" onChange = {(e)=>{
-                  amountOfDAI = (e.target.value)
-                }}/>
-              </div>
-                <br/>
-              <div className={styles.center}>
+            <div>
+            <h4 className={styles.insurancesDetail}>To vary your risk exposure for your DAI investments in AAVE and Compound</h4>
+            
+            <input className = {styles.input} placeholder = "Enter DAI Amount" type="number" onChange = {(e)=>{
+                amountOfDAI = (e.target.value)
+            }}/><br/>
+            <div className={styles.centerRow}>
                 <button className={styles.mybutton} onClick={()=>{
-                  mintForDAI(amountOfDAI);//redirect to success page
-                  }}>Deposit</button>
-              </div>
-                
-              </div>
+                mintForDAI(amountOfDAI);//redirect to success page
+                }}>Deposit</button>
+            </div>
+            
+            <h5 className={styles.insurancesDetail}>Deposit your DAI into the RiskSpectrum protocol</h5><br/>
+            <p className={styles.secondInsurancesDetail}>A protocol in which a particular token is pooled in, which are used to buy 
+            the return accruing interest in 2 different protocols. In exchange of pooling the tokens, there are 50% SafeBet 
+            tranche tokens and 50% BearerOfAll tranche tokens that get issued to the end user that pooled the tokens, the 
+            SafeBet tranche tokens have lower risk and has a really less chance of default and the BearerOfAll tranche is 
+            the opposite. The risk mitigation happens through trading of SafeBet tranche and BearerOfAll tranche tokens and 
+            not by the protocol giving you the tranche tokens.</p>
+            
+            <br/>
+            
             </div>
         </div>)
       }
     
       const TOne = ()=>{
         return (<div>
-          <div className={styles.centerCol}>
-            <h2>The investment is currently ongoing for the pooled in DAI tokens, into the protocols,<br/><div className = {styles.center}><h2>AAVE and Compound</h2></div></h2><br/>
-          <h4><br/> The investment period is ongoing, you will be able to withdraw your tranche tokens after this observation period.</h4>
-          <h4>Tranche tokens are the tokens that represent your share of the pooled DAI tokens</h4>
-          </div>
-          
+            <h2 className={styles.titleOptions}>ONGOING INVESTMENT PERIOD FOR THIS RISK SPECTRUM<br/></h2><br/>
+          <h4 className={styles.insurancesDetail}>The investment period is ongoing, you will be able to withdraw your tranche tokens after this observation period.<br></br>
+          Tranche tokens are the tokens that represent your share of the pooled DAI tokens</h4>
           <br/>
           <Balances/>
           {/* the invest button will only be used by chainlink keepers and not by the end user, as it is unnecessary gas costs to the customers */}
-          <div className={styles.center}>
-            <button className={styles.mybutton} onClick={invest}>Invest</button>
+          <div className={styles.centerRow}>
+            <button className={styles.mybutton} onClick={invest}>Invest</button>  
           </div>
           <br/>
-          <div>
-            <div className = {styles.center}>
             {/* to add something related to the progress of the wrapped tokens or so */}
-            <h3>Observing the Investments</h3>
-            <div className = {styles.investments}></div>
-          </div>
+            <h3 className={styles.titleOptions}>Wanna get more tranches ?</h3>
           <br/>
-          <br/>
-          <div>
-            <div className={styles.center}>
-              <h3>You can invest in middle of the investments as well!</h3>
-            </div>
-            <div className = {styles.mintWindow}>
-            <div className={styles.center}>
-              <h4>To vary your risk exposure for your DAI investments in AAVE and Compound</h4>
-              </div>
-              <div className={styles.center}>
-                <h5>Deposit your DAI into the RiskSpectrum protocol</h5><br/>
-              </div>
-              <div className={styles.center}>
-                <p className={styles.contentFirst}>
+              <h3 className={styles.insurancesDetail}>You can invest in middle of the investments as well!<br></br>
+              To vary your risk exposure for your DAI investments in AAVE and Compound<br>
+              </br>Deposit your DAI into the RiskSpectrum protocol</h3><br/>
+              <input placeholder = "Enter DAI Amount" className = {styles.input} type="number" onChange = {(e)=>{
+                amountOfDAI_dash = (e.target.value)
+              }}/>
+              <br/>
+              <div className={styles.centerRow}>
+                <button className={styles.mybutton} onClick={()=>{
+                console.log("Clicked")
+                mintForDAI_dash(amountOfDAI_dash);//redirect to success page
+              }}>Deposit</button></div>
+              <p className={styles.secondInsurancesDetail}>
                 A protocol in which a particular token is pooled in, which are used to buy 
               the return accruing interest in 2 different protocols. In exchange of pooling the tokens, there are 50% SafeBet 
               tranche tokens and 50% BearerOfAll tranche tokens that get issued to the end user that pooled the tokens, the 
               SafeBet tranche tokens have lower risk and has a really less chance of default and the BearerOfAll tranche is 
               the opposite. The risk mitigation happens through trading of SafeBet tranche and BearerOfAll tranche tokens and 
               not by the protocol giving you the tranche tokens.
-                </p>
-                <p className={styles.contentFirst}>
-                  The investments are currently active, if you want to invest in the middle of the investments, you can do so.
-                  The tranche tokens will be issued to you at a weighted average of the interest bearing tokens. 
-    
-                </p>
-              </div>
-            <div className={styles.center}>
-                <input placeholder = "Enter DAI Amount" className = {styles.input} type="number" onChange = {(e)=>{
-                  amountOfDAI_dash = (e.target.value)
-                }}/>
-              </div>
-                <br/>
-              <div className={styles.center}>
-                <button className={styles.mybutton} onClick={()=>{
-                  console.log("Clicked")
-                  mintForDAI_dash(amountOfDAI_dash);//redirect to success page
-                  }}>Deposit</button>
-              </div>
-            </div>
-            
-          </div>
-          </div>
-          
-          <div></div>
+              <br></br>
+              The investments are currently active, if you want to invest in the middle of the investments, you can do so.
+              The tranche tokens will be issued to you at a weighted average of the interest bearing tokens. 
+              </p>
+              
         </div>)
       }
     
       const TTwo = ()=>{
         return (<div>
-          <h2>The divest call is to made today, the liquidation of aDAI and cDAI into the DAI are to be made today.</h2>
-          <h2>The payouts and the option to claim your DAI tokens will be available from tomorrow. :)</h2>
-          <div className={styles.center}>
-            <button className = {styles.mybutton} onClick = {divest}>Divest!</button>
+          <h3 className={styles.titleOptions}>The divest call is to made today</h3><br></br><br></br>
+          <h3 className={styles.insurancesDetail}>The liquidation of aDAI and cDAI into the DAI are to be made today.<br>
+          </br>The payouts and the option to claim your DAI tokens will be available from tomorrow. :)</h3>
+          <h3 className={styles.insurancesDetail}>Based on the outecome of the divest call, there will be 4 differemt cases<br></br></h3>
+          <ul>
+            <div>
+              <li className={styles.insurancesDetail}>Profitable and Liquid</li>
+              <p className={styles.secondInsurancesDetail}>The divest call was successful and the net amount of DAI is more than the initial amount of DAI that was invested.<br>
+              </br>In this case both the tranches will have the same preference and each tranche will be entitled to the same amount of payouts.<br>
+              </br>This is more likely the case in the more famous and profitable cases</p>
+            </div>
+            <div>
+              <li className={styles.insurancesDetail}>Not so much of loss making and Liquid</li>
+              <p className={styles.secondInsurancesDetail}>The divest call was successful and the net amount of DAI is less than the initial amount but more than half of the amount<br>
+              </br> of DAI invested. In this case if any of the protocols are profitable, then the profits of that plus the initial amount of DAI invested<br>
+              </br>in each protocol will go to the SafeBet tranche token, and the rest of the DAI that we get in return will be given as payouts to the  <br>
+              </br>holders of the BearerOfAll tranches.</p>
+            </div>
+            <div>
+              <li className={styles.insurancesDetail}>Loss making and Liquid</li>
+              <p className={styles.secondInsurancesDetail}>The divest call was successful and the net amount of DAI is less than half of the DAI invested<br>
+              </br>In this case the net amount of Investing Token that we get upon liquidation of the two protocols is completely<br>
+              </br>distributed amongst only the SafeBet tranches and the BearerOfAll tranche holders dont recieve anything.</p>
+            </div>
+            <div>
+              <li className={styles.insurancesDetail}>Illiquid Case</li>
+              <p className={styles.secondInsurancesDetail}>The divest call was unsuccessful, in the sense that the protocol(s) were illiquid<br>
+              </br>In this case the aDAI and cDAI are distributed evenly. The preference between SafeBet and BearerOfAll tranches comes from <br>
+              </br>that the SafeBet tranche holders will be able to get the payouts in the interest bearing tokens before the BearerOfAll tranche <br>
+              </br>holders get to do so.</p>
+            </div>
+          </ul>
+          <div className={styles.centerRow}>
+            <button className={styles.mybutton} onClick = {divest}>Divest!</button>
           </div>
           </div>)
         }
@@ -420,139 +411,122 @@ const Post = () => {
         /////for now we will only observer this
         if(inLiquidMode){
           return(<div>
-            <h2>The divest call has been made, the conversion of SafeBet and BearerOfAll tranches are both available.</h2>
-            <h2>Claim your tranche tokens and convert them into DAI</h2>
-            <div>
-              <div className={styles.threeDiv}>
-              <h3>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>
-              <h3>You have {utils.formatUnits(userBBalance.toString(), 18)} BearerOfAll tranche tokens</h3>
-            </div>
-            <div className={styles.three}>
-              <h3>Claim the DAI tokens that you are entitled to!</h3>  
-              <div className={styles.center}>
-                <button className = {styles.mybutton} onClick={()=>(claimInLiquidmode())}>Claim!</button>
-              </div>
-              
-            </div>
-            </div>
-            
+            <h3 className={styles.titleOptions}>LIQUID CASE</h3><br></br>
+            <h3 className={styles.insurancesDetail}>The divest call has been made, the conversion of SafeBet and BearerOfAll tranches are both available.<br>
+            </br><br></br><br></br>Claim your tranche tokens and convert them into DAI</h3><br></br><br></br><br></br>
+              <div className={styles.balances}><h3 className={styles.balance}>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>
+              <h3 className={styles.balance}>You have {utils.formatUnits(userBBalance.toString(), 18)} BearerOfAll tranche tokens</h3>
+                </div><br></br>
+              <h3 className={styles.insurancesDetail}>Claim the DAI tokens that you are entitled to!</h3>  
+              <div className={styles.centerRow}><button className={styles.mybutton} onClick={()=>(claimInLiquidmode())}>Claim!</button>
+                </div>
           </div>)
         }else{
-          return(<div className={styles.contentOnlyA}>
-            <h3>The divest call was attempted, but unfortunately the protocols(s) were not in liquid mode</h3>
-            <h3>You can claim your higher priority SafeBet tranche tokens now!</h3>
-            <div className={styles.descriptionOnlyA}><br/>
-              <h4>
+          return(<div>
+            <h3 className={styles.titleOptions}>ILLIQUID CASE - DIVEST CALL unsuccessful</h3>
+            <h3 className={styles.insurancesDetail}>The divest call was attempted, but unfortunately the protocols(s) were not in liquid mode<br>
+            </br>You can claim your higher priority SafeBet tranche tokens now!</h3>
+            <div><br/>
+              <h4 className={styles.secondInsurancesDetail}>
                 Fallback-claim the DAI tokens that you are entitled to for your SafeBet tranches!<br/>
               You now have to decide which of your traches go to redeem which protocol
               You have an option between aDAI and cDAI
               </h4><br/>
-              
-            </div>
-            {/* to fix this later on, specifically the huge left inclination*/}
-            <div >
               <br/>
-              <div className={styles.center}>
-              <h3>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>      
-              </div>
-    
+              <h3 style={{
+                marginLeft:"35vw",
+                width:"30vw",
+              }} className={styles.balance}>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>      
               <br/>
-    
-              <div className={styles.threeDiv}>
                 <br/>
-                <div className = {styles.claimWindow}>
-                  <div className= {styles.claimContent}>
-                    <h5>How many of your superior tranches do you wanna exchange for aDAI?</h5>
-                  <div className={styles.center}>
-                    <input placeholder="Amount from AAVE" onChange = {(e)=>{
-                    AfromAAVE = (e.target.value)
-                  }}></input>
-                  </div>
-                  </div>
+                <div style={{
+                  display: "flex",
+                  width: "100%",
+                }}>
+                  <div className={styles.inputWindow}>
+                  <h5 className={styles.insurancesDetail}>How many of your superior tranches do you wanna exchange for aDAI?</h5>
+                    <div style = {{
+                      width:"50vw",
+                    }} className={styles.centerRow}><input className={styles.inputMini} placeholder="Amount from AAVE" onChange = {(e)=>{
+                      AfromAAVE = (e.target.value)
+                      }}></input>
+                    </div>
                 </div>
-                <div className={styles.claimWindow}>
-                  <div className={styles.claimContent}>
-                    <h5>How many of your superior tranches do you wanna exchange for cDAI?</h5>  
-                  <div className = {styles.center}>
-                    <input placeholder="Amount from Compound" onChange = {(e)=>{
+                <div className={styles.inputWindow}>
+                  <h5 className={styles.insurancesDetail}>How many of your superior tranches do you wanna exchange for cDAI?</h5>  
+                    <div style={{
+                      width:"50vw",
+                    }} className={styles.centerRow}>
+                      <input className={styles.inputMini} placeholder="Amount from Compound" onChange = {(e)=>{
                       AfromCompound = e.target.value
-                  }}></input>
-                  </div>
-                  </div>
-                  
-                  
+                  }}></input> 
+                    </div>
                 </div>
-              </div>
-              <div className = {styles.center} styles = {{
-                display: "flex",
-                justifyContent: "space-around",
-                left: "50%",
-              }}>
-                <br/>
-                <br/>
-                <br/>
-                <div className = {styles.button}>
-                  <button className={styles.mybutton} onClick = {()=>{
+                </div>
+                
+                  <div className={styles.centerRow}>
+                    <button className={styles.mybutton} onClick = {()=>{
                       claimInOnlyA(AfromAAVE, AfromCompound);
                     }}>Claim!</button>
-                </div>
-              </div>
+                  </div>
+                  
             </div>
           </div>)
         }
       }
     
       const AboveTThree = ()=>{
-        return(<div className = {styles.container}>
-          <div>
-          <h2 className={styles.toptxt}>Fallback-claim your tokens</h2>
-          <h3 className={styles.scndtxt}>
+        return(<div>
+          <h2 className={styles.titleOptions}>Fallback-claim your tokens</h2><br/><br/>
+          <h3 className={styles.insurancesDetail}>
                 Due to illiquidity of the invested tokens, the state of the insurance is not in the Liquid mode.<br></br>
                 We are offering redemptions for both the SafeBet and the BearerOfAll tranches</h3>
-          <div className={styles.content}>
-            <div className={styles.left}>
-              <h2> Claim your SafeBet tranche tokens</h2>
-    
-              <div className={styles.leftdiv}>
-              <h3>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>
-              <div>
-                How much of your SafeBet tranche tokens do you want to redeem from AAVE?
+          <div style={{
+            display: "flex",
+          }} className={styles.centerRow}>
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              width: "40vw",
+              
+            }}>
+              <h2 className={styles.insurancesDetail}> Claim your SafeBet tranche tokens</h2>
+              <h3  className={styles.balance}>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>
+                <p className= {styles.insurancesDetail}>How much of your SafeBet tranche tokens do you want to redeem from AAVE?</p>
                 <br/>
-                <input label="AfromAAVE" placeholder="Amount from AAVE"></input>
-              </div>
-              <div>
-              How much of your SafeBet tranche tokens do you want to redeem from Compound?
+                <input className={styles.inputMini} label="AfromAAVE" placeholder="Amount from AAVE"></input>
+              <p className={styles.insurancesDetail}>How much of your SafeBet tranche tokens do you want to redeem from Compound?</p> 
               <br/>
-              <input label = "AfromCompound" placeholder="Amount from Compound"></input>
-              </div>
-              </div>
+              <input className={styles.inputMini} label = "AfromCompound" placeholder="Amount from Compound"></input>
             </div>
-            <div className={styles.right}>
-              <h2>Claim your BearerOfAll tranche tokens</h2>
-    
-              <div className={styles.leftdiv}>
-              <h3>You have {utils.formatUnits(userBBalance.toString(), 18)} BearerOfAll tranche tokens</h3>
-              <div>
-                How much of your BearerOfAll tranche tokens do you want to redeem from AAVE?
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              width:"40vw"
+
+            }}>
+              <h2 className={styles.insurancesDetail}>Claim your BearerOfAll tranche tokens</h2>
+              <h3 className={styles.balance}>You have {utils.formatUnits(userBBalance.toString(), 18)} BearerOfAll tranche tokens</h3>
+                <p className={styles.insurancesDetail}>How much of your BearerOfAll tranche tokens do you want to redeem from AAVE?</p>
                 <br></br>
-                <input label="BfromAAVE" placeholder="Amount from AAVE" onChange = {(e)=>{BfromAAVE = e.target.value}}></input>
-              </div>
-              <div>
-              How much of your BearerOfAll tranche tokens do you want to redeem from Compound?
+                <input className={styles.inputMini} label="BfromAAVE" placeholder="Amount from AAVE" onChange = {(e)=>{BfromAAVE = e.target.value}}></input>
+              <p style = {{width:"30vw"}}className={styles.insurancesDetail}>How much of your BearerOfAll tranche tokens do you want to redeem from Compound?</p>
               <br/>
-              <input placeholder="Amount from Compound" label="BfromCompound" onChange = {(e)=>{
+              <input className={styles.inputMini} placeholder="Amount from Compound" label="BfromCompound" onChange = {(e)=>{
                 BfromCompound = e.target.value
               }}></input>
-              </div>
-              </div>
             </div>
-            <div className={styles.btn_claim}>
-                <button type = "submit"  onClick = {() => {
-                  const tx = claimInFallbackMode(AfromAAVE, AfromCompound, BfromAAVE, BfromCompound);
-                }} className={styles.mybutton}>Claim!</button>
-              </div>
           </div>
-          </div>
+            
+            <div className={styles.centerRow}>
+              <button className={styles.mybutton} type = "submit"  onClick = {() => {
+              const tx = claimInFallbackMode(AfromAAVE, AfromCompound, BfromAAVE, BfromCompound);
+            }}>Claim!</button>
+            </div>
         </div>)
       }
       const Screen = () => {
@@ -609,11 +583,7 @@ const Post = () => {
             {/* change the icon */}
           </Head>
           <main className={styles.main}>
-            <div>
               <Screen/>
-              <div>
-              </div>
-            </div>
           </main>
         </div>
       );
