@@ -43,12 +43,9 @@ contract RiskSpectrumFactory {
         Proxy proxy = new Proxy(constructData, Implementation);
         SplitInsuranceV2 proxyI = SplitInsuranceV2(payable(address(proxy)));
         Exchange exchange = new Exchange(proxyI.A(), proxyI.B());
-        console.log("Implementation", Implementation);
         riskSpectrumExchangeContracts[Implementation] = address(exchange);
         console.log("riskSpectrumExchangeContracts[Implementation]", riskSpectrumExchangeContracts[Implementation]);
         riskSpectrumContracts[Implementation] = address(proxy);
-        // riskSpectrum memory imp = returnData(payable(Implementation));
-        // detailsOfRiskSpectrums[address(proxy)] = imp;
         riskSpectrumContractsArray.push(address(proxy));
         riskSpectrumContractsArrayLength++;
     }

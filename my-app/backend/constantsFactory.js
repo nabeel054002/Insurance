@@ -1,3 +1,6 @@
+const assistAddr = "0x31403b1e52051883f2Ce1B1b4C89f36034e1221D"
+const factoryAddr = "0x0B32a3F8f5b7E5d315b9E52E640a49A89d89c820"
+
 const proxyAbi = [
   {
     "inputs": [
@@ -39,9 +42,96 @@ const proxyAbi = [
 ]
 const factoryAbi = [
   {
+    "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
         "internalType": "address",
+        "name": "liquidityProvider",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountA",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountB",
+        "type": "uint256"
+      }
+    ],
+    "name": "LiquidityAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "liquidityProvider",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountA",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountB",
+        "type": "uint256"
+      }
+    ],
+    "name": "LiquidityRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountAOut",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountBOut",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountAIn",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountBIn",
+        "type": "uint256"
+      }
+    ],
+    "name": "SwapExecuted",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address payable",
         "name": "Implementation",
         "type": "address"
       },
@@ -64,22 +154,17 @@ const factoryAbi = [
         "type": "address"
       }
     ],
-    "name": "detailsOfRiskSpectrums",
+    "name": "liquidity",
     "outputs": [
       {
-        "internalType": "string",
-        "name": "c",
-        "type": "string"
+        "internalType": "uint256",
+        "name": "balanceA",
+        "type": "uint256"
       },
       {
-        "internalType": "string",
-        "name": "cx",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "cy",
-        "type": "string"
+        "internalType": "uint256",
+        "name": "balanceB",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -118,7 +203,7 @@ const factoryAbi = [
         "type": "tuple"
       }
     ],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -171,6 +256,25 @@ const factoryAbi = [
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "riskSpectrumExchangeContracts",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
 ]
-module.exports = {proxyAbi, factoryAbi}
+module.exports = {proxyAbi, factoryAbi, factoryAddr, assistAddr}

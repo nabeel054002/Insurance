@@ -6,8 +6,6 @@ const {Addr, Abi, Cx, Cy, CxAbi, CyAbi} = require("../constants.js");
 async function main() {
     const provider = new ethers.providers.JsonRpcProvider("http://localhost:8545");
     const signer = provider.getSigner();
-    console.log(CxAbi);
-    console.log(CyAbi)
     const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
     const contract = new Contract(Addr, Abi, wallet);
     console.log("Invest call is about to be made")

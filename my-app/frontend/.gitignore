@@ -30,11 +30,3 @@ yarn-error.log*
 
 # vercel
 .vercel
-
-# typescript
-*.tsbuildinfo
-
-# Lock Files
-package-lock.json
-pnpm-lock.yaml
-yarn.lock
