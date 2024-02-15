@@ -3,9 +3,9 @@ import {useState, useEffect, useRef} from "react";
 import styles from "../styles/Home.module.css"
 import {utils} from "ethers"
 
-export const TTwo = (
+export const TTwo = ({
   contract
-)=>{
+})=>{
 
   const divest = async () =>{
     const tx = await contract?.divest({

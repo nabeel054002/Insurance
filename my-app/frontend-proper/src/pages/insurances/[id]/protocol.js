@@ -27,7 +27,8 @@ const Post = ({
   const [tOne, setTOne] = useState(zero);
   const [tTwo, setTTwo] = useState(zero);
   const [tThree, setTThree] = useState(zero);
-  const [contract, setContract] = useState(zero);
+  const [contract, setContract] = useState(null);
+  const [daiContract, setDaiContract] = useState(null);
 
   const [isInvested, setIsInvested] = useState(false);//set this
   const [inLiquidMode, setInLiquidMode] = useState(false);
@@ -58,11 +59,13 @@ const Post = ({
   const getContract = async () => {
     if(!signer) return;
     setContract(new Contract(proxyAddr, implementationAbi, signer));
+    setDaiContract(new Contract(daiAddress, daiAbi, signer))
     console.log('this one!')
   } 
 
   useEffect(() => {
-    getContract();
+    if(signer&& proxyAddr)getContract();
+    else return;
   }, [proxyAddr, signer])
 
   const updateBlockTimestamp = async () =>{
@@ -91,49 +94,50 @@ const Post = ({
   }
     
   const getTimes = async () =>{
-    console.log('contract.S', contract.S)
-    const s = await contract.S()
-    setS(s)
-    setTOne((await contract.T1()));
-    setTTwo((await contract.T2()));
-    setTThree((await contract.T3()));
-    console.log('Got times')
+    if(contract && contract.S){
+      setS(await contract.S())
+      setTOne((await contract.T1()));
+      setTTwo((await contract.T2()));
+      setTThree((await contract.T3()));
+      console.log("Got times!")
+    }
+    else {
+      return;
+    }
   }
 
 
   const getUserTrancheBalance = async () =>{
     const addrUser = (await signer.getAddress())
+    console.log('addrUser', addrUser)
+    console.log('contract', contract, contract.A)
     const AtrancheAddr = (await contract.A());
     const BtrancheAddr = (await contract.B());
     const AtrancheContract = new Contract(AtrancheAddr, TrancheAbi, signer);
     const AtrancheBalance = await AtrancheContract?.balanceOf(addrUser);
+    console.log('AtrancheBalance', AtrancheBalance)
     setUserABalance(AtrancheBalance);
     const BtrancheContract = new Contract(BtrancheAddr, TrancheAbi, signer);
     const BtrancheBalance = await BtrancheContract.balanceOf(addrUser);
+    console.log('BtrancheBalance', BtrancheBalance)
     setUserBBalance(BtrancheBalance);
     console.log('got user tranch blanace')
   }
 
   useEffect(() => {
     //if contract was not null, then signer and proxyAddr are also not null...
-    if(contract && contract.S && signer){
+    if(contract && contract.S && contract.A && signer){
       getTimes();
       getUserTrancheBalance();
       updateCBalance();
       getLiquidityStatus();
     }
-  }, [contract])
+  }, [contract, signer])
 
   const updateCBalance = async () =>{
     const cBalance = (await contract?.cBalance());
     setCBalance(cBalance);
   }
-
-  useEffect(() => {
-    if(contract && signer){
-      getUserTrancheBalance();
-    }
-  }, [cBalance, contract])
     
   const Screen = () => {
     // console.log('blocktimestamp', blockTimeStamp)
@@ -141,16 +145,21 @@ const Post = ({
       if (blockTimeStamp < S) 
       return (<SScreen
         contract={contract}
-        daiContract={new Contract(daiAddress, daiAbi, signer)}
+        daiContract={daiContract}
         userABalance={userABalance}
         userBBalance={userBBalance}
-        updateCBalance={updateCBalance}
+        getUserTrancheBalance={getUserTrancheBalance}
+        updateBlockTimestamp={updateBlockTimestamp}
       />);
       else if (blockTimeStamp < tOne) return (<TOne
         contract={contract}
-        daiContract={new Contract(daiAddress, daiAbi, signer)}
+        daiContract={daiContract}
         userABalance={userABalance}
         userBBalance={userBBalance}
+        getUserTrancheBalance={getUserTrancheBalance}
+        updateBlockTimestamp={updateBlockTimestamp}
+        getIsInvested={getLiquidityStatus}
+        isInvested={isInvested}
       />)
       else if (blockTimeStamp < tTwo) return (<TTwo
         contract={contract}

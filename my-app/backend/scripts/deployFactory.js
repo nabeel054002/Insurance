@@ -19,7 +19,7 @@ async function main() {
         "SplitInsuranceV2",
         signer
       );
-    
+    console.log('21')
     // deploy the contract
     const deployedRiskSpectrumContract = await RiskSpectrumContract.deploy({gasLimit: 30000000});
     await deployedRiskSpectrumContract.deployed();

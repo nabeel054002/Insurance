@@ -3,26 +3,37 @@ import {useState, useEffect, useRef} from "react";
 import styles from "../styles/Home.module.css"
 import {utils} from "ethers"
 
-export const TOne = (
+export const TOne = ({
   contract,
   daiContract,
   userABalance,
-  userBBalance
-)=>{
+  userBBalance,
+  getUserTrancheBalance,
+  updateBlockTimestamp,
+  getIsInvested,
+  isInvested
+})=>{
 
   const [amountOfDAI_dash, setAmountOfDAI_dash] = useState(0);
         
   const mintForDAI_dash = async(value) => {
-    console.log("entered")
+    console.log("entered", value, typeof value)
     const valueBN = utils.parseUnits(value, 18);
-    const assistContractAddr = await contract?.AssistContract()
+    console.log('valueBN', valueBN)
+    const assistContractAddr = await contract.AssistContract()
     console.log("assist contract is ", assistContractAddr)
     const tx2 = await daiContract.approve(assistContractAddr, valueBN);
     await tx2.wait()
-    const tx = await contract?.splitRiskInvestmentPeriod(valueBN, {
-      gasLimit: 1000000,
+    console.log('tx2', tx2)
+    console.log('contract', contract, contract.splitRiskInvestmentPeriod)
+    try {const tx = await contract.splitRiskInvestmentPeriod(valueBN.toString(), {
+      gasLimit: 30000000,
     });
-    await tx.wait()
+    console.log('tx', tx)
+    await tx.wait()} catch{(er)=>console.log('er', er)}
+    console.log('finished Investing')
+    await getUserTrancheBalance();
+    await updateBlockTimestamp();
 
   }
 
@@ -31,6 +42,8 @@ export const TOne = (
       gasLimit: 1000000,
     })
     await tx.wait();
+    console.log('invested!')
+    getIsInvested();
   }
 
   return (<div>
@@ -43,9 +56,9 @@ export const TOne = (
       userBBalance={userBBalance} 
     />
     {/* the invest button will only be used by chainlink keepers and not by the end user, as it is unnecessary gas costs to the customers */}
-    <div className={styles.centerRow}>
+    {!isInvested ? (<div className={styles.centerRow}>
       <button className={styles.mybutton} onClick={invest}>Invest</button>  
-    </div>
+    </div>) : null}
     <br/>
       {/* to add something related to the progress of the wrapped tokens or so */}
       <h3 className={styles.titleOptions}>Wanna get more tranches ?</h3>

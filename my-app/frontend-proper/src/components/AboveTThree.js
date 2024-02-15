@@ -3,7 +3,7 @@ import {useState, useEffect, useRef} from "react";
 import styles from "../styles/Home.module.css"
 import {utils} from "ethers"
 
-export const AboveTThree = (
+export const AboveTThree = ({
   AfromAAVE,
   AfromCompound,
   BfromAAVE,
@@ -11,7 +11,7 @@ export const AboveTThree = (
   userABalance,
   userBBalance,
   contract
-)=>{
+})=>{
 
       
   const claimInFallbackMode = async (AfromAAVE, AfromCompound, BfromAAVE, BfromCompound) =>{
@@ -19,9 +19,9 @@ export const AboveTThree = (
     const BfromAAVEBN = utils.parseUnits(BfromAAVE.toString(), 18);
     const AfromCompoundBN = utils.parseUnits(AfromCompound.toString(), 18);
     const BfromCompoundBN = utils.parseUnits(BfromCompound.toString(), 18);
-    const tx = await contract?.claimA(AfromAAVEBN, AfromCompoundBN);
+    const tx = await contract?.claimA(AfromAAVEBN, AfromCompoundBN, {gasLimit: 1000000});
     await tx.wait();
-    const tx2 = await contract?.claimB(BfromAAVEBN, BfromCompoundBN);
+    const tx2 = await contract?.claimB(BfromAAVEBN, BfromCompoundBN, {gasLimit: 1000000});
     await tx2.wait();
   }
     return(<div>

@@ -3,10 +3,10 @@ import {useState, useEffect, useRef} from "react";
 import styles from "../styles/Home.module.css"
 import {utils} from "ethers"
 
-export const TThree = (
+export const TThree = ({
   inLiquidMode,
   contract
-)=>{  
+})=>{  
     const claimInOnlyA = async (AfromAAVE, AfromCompound) =>{
       const AfromAAVEBN = utils.parseUnits(AfromAAVE.toString(), 18);
       const AfromCompoundBN = utils.parseUnits(AfromCompound.toString(), 18);

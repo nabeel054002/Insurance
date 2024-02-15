@@ -33,7 +33,7 @@ export default function Home() {
             <br/>
 
           </div>
-          <div>
+          <div className={styles.imageMainPg}>
             <img src="/sideimg.png"></img>
           </div>
         </div>

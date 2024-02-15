@@ -1,91 +1,46 @@
+import { useUrl } from 'nextjs-current-url';
 import Web3Modal from "web3modal"
 import Head from "next/head";
 import { useRouter } from 'next/router';
 import styles from "../../../styles/Home.module.css";
+import {usePathname} from "next/navigation";
 import {useState, useEffect, useRef} from "react";
 import {BigNumber, Contract, ethers, utils} from "ethers";
-import { factoryAddr, factoryAbi, implementationAbi, TrancheAbi, daiAbi, assistAbi } from "../../../constants";
+import { implementationAbi, TrancheAbi, daiAbi, assistAbi } from "../../../constants";
 
-const Post = () => {
+const Post =  () => {
 
-  let AfromAAVE = 0;
+  const [walletConnected, setWalletConnected] = useState(false);
+  const web3ModalRef = useRef();
+
+  const [AfromAAVE, setAfromAAVE] = useState(0)
   let AfromCompound = 0;
   let BfromAAVE = 0;
   let BfromCompound = 0;
   let amountOfDAI = 0;
   let amountOfDAI_dash = 0;
-  let proxyAddr = "";
-
-
-  const router = useRouter()
-  const { id } = router.query;
-  let slicerIdx = 0;
-
-  console.log("ID is this", id)
-
-  for(let i = 0; i < id.length; i++){
-    if(id.substring(i,i+5) === "PAUSE"){
-      slicerIdx = i;
-    }
-  }
-  const implementationAddr = id.substring(0, slicerIdx)
-  proxyAddr = id.substring(slicerIdx+5, id.length)
-  console.log("slicerIdx", id.substring(0, slicerIdx))
-  console.log("rest", id.substring(slicerIdx+5, id.length))
-
-  const [signer, setSigner] = useState(null);
-  const [web3provider, setWeb3provider] = useState(null);
-
-  // const [proxyAddr, setProxyAddr] = useState("");
-//   const getProxyAddr = async () =>{
-//     const signer = await getProviderOrSigner(true);
-//     const factoryContract = new Contract(factoryAddr, factoryAbi, signer);
-//     proxyAddr = await factoryContract.riskSpectrumContracts(implementationAddr);
-
-// }
-  
-  console.log("proxyAddr globally is referneced as", proxyAddr)
-  console.log("imp thing", implementationAddr)
-  
-
-  const [walletConnected, setWalletConnected] = useState(false);
-    const web3ModalRef = useRef();
-
-    useEffect(() => {
-        if (!walletConnected) {
-          web3ModalRef.current = new Web3Modal({
-            network: "hardhat",
-            providerOptions: {},
-            disableInjectedProvider: false,
-          });
-    
-          connectWallet().then(async () => {
-            console.log("useeffect reached")
-            setSigner(await getProviderOrSigner(true));
-            getTimes();
-            updateBlockTimestamp();//need to see if this is necessary
-            getUserTrancheBalance();
-            // getProxyAddr();
-          });
+  const [proxyAddr, setProxyAddr] = useState('')
+  const [id, setId] = useState('0x1234')
+  console.log('this')
+  const router = useRouter();
+  useEffect(()=> {
+    setId(router.query.id)
+    if(id){
+      let slicerIdx = 0;
+      for(let i = 0; i < 100; i++){
+        if(id.substring(i,i+5) === "PAUSE"){
+          slicerIdx = i;
         }
-      }, [walletConnected]);
-
-    
-    const connectWallet = async () => {
-    try {
-        await getProviderOrSigner();
-        setWalletConnected(true);
-    } catch (error) {
-        console.error(error);
+      }
+      setProxyAddr(id.substring(slicerIdx+5, id.length))
     }
-    };
+  }, [router.query.id])
 
     const getProviderOrSigner = async (needSigner = false) => {
-        const provider = await web3ModalRef.current.connect();
-        const web3Provider = new ethers.providers.Web3Provider(provider);
-        setWeb3provider(web3Provider);
-    
-        const { chainId } = await web3Provider.getNetwork();
+        const provider = await ((web3ModalRef)?.current)?.connect();
+        const web3Provider = provider ? new ethers.providers.Web3Provider(provider): null;
+        const cId = await web3Provider?.getNetwork();
+        const chainId = cId ? cId.chainId : 1;
         if (chainId !== 1 ) {
           console.log(chainId)
           // window.alert("Please switch to the Hardhat fork network!");
@@ -93,7 +48,7 @@ const Post = () => {
         }
     
         if (needSigner) {
-          const signer = web3Provider.getSigner();
+          const signer = web3Provider?.getSigner();
           return signer;
         }
         return web3Provider;
@@ -110,46 +65,49 @@ const Post = () => {
       const [userABalance, setUserABalance] = useState(zero);
       const [userBBalance, setUserBBalance] = useState(zero);
       const [cBalance, setCBalance] = useState(zero);
-    
-      
-    
-      const Loading = () => {
-        return (
-          <div className={styles.loading}>
-            <h1>{S}</h1>
-            <h1>{tOne}</h1>
-            <h1>{tTwo}</h1>
-          </div>
-        )
+
+      const updateBlockTimestamp = async () =>{
+        console.log('entrd here')
+        const provider = await ((web3ModalRef)?.current)?.connect();
+        const web3Provider = provider? new ethers.providers.Web3Provider(provider): null;
+        console.log('web3Provider', web3Provider)
+        web3Provider?.getBlock('latest').then((block)=>{
+            const t = (block.timestamp)
+            console.log('t', t)
+            setBlockTimeStamp(t)
+            console.log('updated')
+        })
+        const signer = await getProviderOrSigner(true);
+        const contract = signer ? new ethers.Contract(proxyAddr, implementationAbi, signer) : null;
+        const isInvested = (await contract?.isInvested())
+        const inLiquidMode = (await contract?.inLiquidMode())
+        setIsInvested(isInvested)
+        setInLiquidMode(inLiquidMode)
       }
     
       const getTimes = async () =>{
         //to be run only once 
         const signer = await getProviderOrSigner(true);
-        // if(proxyAddr.length == 0){await getProxyAddr()}
-        // console.log("proxyAddr is ", proxyAddr)
-        const contract = new ethers.Contract(proxyAddr, implementationAbi, signer);
+        const contract = signer?  new ethers.Contract(proxyAddr, implementationAbi, signer): null;
         console.log(contract)
-        // const contract = new ethers.Contract("SplitInsuranceV2", proxyAddr, signer);
         console.log("Contract is", contract)
-        let s = (await contract.S())
+        let s = (await contract?.S())
         console.log("S is ", s)
         setS(s)
-        setTOne((await contract.T1()));
-        setTTwo((await contract.T2()));
-        setTThree((await contract.T3()));
+        setTOne((await contract?.T1()));
+        setTTwo((await contract?.T2()));
+        setTThree((await contract?.T3()));
       }
       
       const mintForDAI_dash = async(value) => {
         console.log("entered")
         const signer = await getProviderOrSigner(true);
-        // if(proxyAddr.length == 1){await getProxyAddr()}
-        const contract = new Contract(proxyAddr, implementationAbi, signer);
+        const contract = signer ? new Contract(proxyAddr, implementationAbi, signer): null;
         const valueBN = utils.parseUnits(value, 18);
-        const dai = new Contract("0x6b175474e89094c44da98b954eedeac495271d0f", daiAbi, signer);
-        console.log("assist contract is ",await contract.AssistContract())
-        const tx2 = await dai.approve(await contract.assistContracAddr(), valueBN);
-        const tx = await contract.splitRiskInvestmentPeriod(valueBN, {
+        const dai = signer? new Contract("0x6b175474e89094c44da98b954eedeac495271d0f", daiAbi, signer) : null;
+        console.log("assist contract is ",await contract?.AssistContract())
+        const tx2 = await dai.approve(await contract?.assistContracAddr(), valueBN);
+        const tx = await contract?.splitRiskInvestmentPeriod(valueBN, {
           gasLimit: 1000000,
         });
         await tx.wait()
@@ -157,57 +115,42 @@ const Post = () => {
       }
     
       const mintForDAI = async (value) => {
+        // console.log('entered Mint', value)
+        await updateBlockTimestamp();
+        console.log('blockTimestamp', blockTimeStamp)
+        console.log('s', S)
+        if(blockTimeStamp >= S){
+          throw new Error("Investment Time has passed")
+        }
         const signer = await getProviderOrSigner(true)
-        const contract = new ethers.Contract(proxyAddr, implementationAbi, signer);
+        const contract = signer ? new ethers.Contract(proxyAddr, implementationAbi, signer): null;
         const valueBN = utils.parseUnits(value, 18);
-        const dai = new Contract("0x6b175474e89094c44da98b954eedeac495271d0f", daiAbi, signer);
-        const tx3 = await dai.approve(await contract.assistContracAddr(), valueBN);
+        const dai = signer ? new Contract("0x6b175474e89094c44da98b954eedeac495271d0f", daiAbi, signer): null;
+        const tx3 = await dai.approve(await contract?.assistContracAddr(), valueBN);
         await tx3.wait();
         //idhar tak theek hai 
-        const assist = new Contract(await contract.AssistContract(), assistAbi, signer);
-        const tx = await contract.splitRisk(valueBN, {
+        const assist = signer ? new Contract(await contract?.AssistContract(), assistAbi, signer): null;
+        const tx = await contract?.splitRisk(valueBN, {
           gasLimit: 30000000,
         });
         await tx.wait();
-        const implementation = new Contract(implementationAddr, implementationAbi, signer)
-        console.log("value of c in actual", await implementation.c())
-        console.log("value of c in assists contract is",await assist.c())
+        // console.log("value of c in actual", await implementation.c())
+        // console.log("value of c in assists contract is",await assist.c())
         await updateCBalance();
+        console.log('updated c abalce')
     }
-    
-      const updateBlockTimestamp = async () =>{
-        // const provider = new ethers.providers.InfuraProvider("https://eth-mainnet.g.alchemy.com/v2/1jL4KovovKlEyn-QtmIhBAFbarVNUd_M");
-    
-        const provider = await web3ModalRef.current.connect();
-        const web3Provider = new ethers.providers.Web3Provider(provider);
-        web3Provider.getBlock('latest').then((block)=>{
-            const t = (block.timestamp)
-            setBlockTimeStamp(t)
-        })
-        const signer = await getProviderOrSigner(true);
-        // if(proxyAddr.length == 1){await getProxyAddr()
-        // }
-        const contract = new ethers.Contract(proxyAddr, implementationAbi, signer);
-        const isInvested = (await contract.isInvested())
-        const inLiquidMode = (await contract.inLiquidMode())
-        setIsInvested(isInvested)
-        setInLiquidMode(inLiquidMode)
-      }
-    
-    
-    
+
       const getUserTrancheBalance = async () =>{
         const signer = await getProviderOrSigner(true);
-        const addrUser = (await signer.getAddress())
-        // if(proxyAddr.length == 1){await getProxyAddr()}
-        const contract = new Contract(proxyAddr, implementationAbi, signer);
-        const AtrancheAddr = (await contract.A());
-        const BtrancheAddr = (await contract.B());
-        const AtrancheContract = new Contract(AtrancheAddr, TrancheAbi, signer);
-        const AtrancheBalance = await AtrancheContract.balanceOf(addrUser);
+        const addrUser = (await signer?.getAddress())
+        const contract = signer ? new Contract(proxyAddr, implementationAbi, signer): null;
+        const AtrancheAddr = (await contract?.A());
+        const BtrancheAddr = (await contract?.B());
+        const AtrancheContract = signer ? new Contract(AtrancheAddr, TrancheAbi, signer): null;
+        const AtrancheBalance = await AtrancheContract?.balanceOf(addrUser);
         setUserABalance(AtrancheBalance);
-        const BtrancheContract = new Contract(BtrancheAddr, TrancheAbi, signer);
-        const BtrancheBalance = await BtrancheContract.balanceOf(addrUser);
+        const BtrancheContract = signer ? new Contract(BtrancheAddr, TrancheAbi, signer): null;
+        const BtrancheBalance = await BtrancheContract?.balanceOf(addrUser);
         setUserBBalance(BtrancheBalance);
       }
     
@@ -215,21 +158,23 @@ const Post = () => {
         updateBlockTimestamp();
         updateCBalance();
       }, [isInvested, inLiquidMode])
+
+      useEffect(() => {
+        getUserTrancheBalance()
+      }, [cBalance])
     
       const updateCBalance = async () =>{
         const signer = await getProviderOrSigner();
-        // if(proxyAddr.length == 1){await getProxyAddr()}
-        const contract = new Contract(proxyAddr, implementationAbi, signer);
-        const cBalance = (await contract.cBalance());
+        const contract = signer ? new Contract(proxyAddr, implementationAbi, signer): null;
+        const cBalance = (await contract?.cBalance());
         setCBalance(cBalance);
       }
     
       const claimInLiquidmode = async () =>{
         console.log("claim in liquid mode entered")
         const signer = await getProviderOrSigner();
-        // if(proxyAddr.length == 1){await getProxyAddr()}
-        const contract = new Contract(proxyAddr, implementationAbi, signer);
-        const tx = await contract.claimAll({
+        const contract = signer ? new Contract(proxyAddr, implementationAbi, signer): null;
+        const tx = await contract?.claimAll({
           gasLimit: 1000000,
         })
         await tx.wait(); 
@@ -237,8 +182,8 @@ const Post = () => {
 
       const invest = async () => {
         const signer = await getProviderOrSigner(true);
-        const contract = new Contract(proxyAddr, implementationAbi, signer);
-        const tx = await contract.invest({
+        const contract = signer ? new Contract(proxyAddr, implementationAbi, signer): null;
+        const tx = await contract?.invest({
           gasLimit: 1000000,
         })
         await tx.wait();
@@ -246,8 +191,8 @@ const Post = () => {
 
       const divest = async () =>{
         const signer = await getProviderOrSigner(true);
-        const contract = new Contract(proxyAddr, implementationAbi, signer);
-        const tx = await contract.divest({
+        const contract = signer ? new Contract(proxyAddr, implementationAbi, signer): null;
+        const tx = await contract?.divest({
           gasLimit: 1000000,
         })
         await tx.wait();
@@ -255,36 +200,61 @@ const Post = () => {
       }
     
       const claimInFallbackMode = async (AfromAAVE, AfromCompound, BfromAAVE, BfromCompound) =>{
-        // if(proxyAddr.length == 1){await getProxyAddr()}
         const signer = await getProviderOrSigner(true)
-        const contract = new Contract(proxyAddr, implementationAbi, signer);
-        const AfromAAVEBN = utils.parseUnits(AfromAAVE.toString(), 18);
-        const BfromAAVEBN = utils.parseUnits(BfromAAVE.toString(), 18);
-        const AfromCompoundBN = utils.parseUnits(AfromCompound.toString(), 18);
-        const BfromCompoundBN = utils.parseUnits(BfromCompound.toString(), 18);
-        let tx = await contract.claimA(AfromAAVEBN, AfromCompoundBN);
+        const contract = signer ? new Contract(proxyAddr, implementationAbi, signer): null;
+        const AfromAAVEBN = utils.parseUnits(AfromAAVE?AfromAAVE.toString():0, 18);
+        const BfromAAVEBN = utils.parseUnits(BfromAAVE?BfromAAVE.toString():0, 18);
+        const AfromCompoundBN = utils.parseUnits(AfromCompound? AfromCompound.toString() : 0, 18);
+        const BfromCompoundBN = utils.parseUnits(BfromCompound? BfromCompound.toString() : 0, 18);
+        let tx = await contract?.claimA(AfromAAVEBN, AfromCompoundBN);
         await tx.wait();
-        await contract.claimB(BfromAAVEBN, BfromCompoundBN);
+        await contract?.claimB(BfromAAVEBN, BfromCompoundBN);
         await tx.wait();
       }
     
       const claimInOnlyA = async (AfromAAVE, AfromCompound) =>{
         const signer = await getProviderOrSigner(true)
-        // if(proxyAddr.length == 1){await getProxyAddr()}
-        const contract = new Contract(proxyAddr, implementationAbi, signer);
-        const AfromAAVEBN = utils.parseUnits(AfromAAVE.toString(), 18);
-        const AfromCompoundBN = utils.parseUnits(AfromCompound.toString(), 18);
-        let tx = await contract.claimA(AfromAAVEBN, AfromCompoundBN, {
+        const contract = signer ? new Contract(proxyAddr, implementationAbi, signer): null;
+        const AfromAAVEBN = utils.parseUnits(AfromAAVE?AfromAAVE.toString(): 0, 18);
+        const AfromCompoundBN = utils.parseUnits(AfromCompound?AfromAAVE.toString(): 0, 18);
+        let tx = await contract?.claimA(AfromAAVEBN, AfromCompoundBN, {
           gasLimit: 1000000,
         });
         await tx.wait();
       }
+
+      const connectWallet = async () => {
+        try {
+            await getProviderOrSigner();
+            setWalletConnected(true);
+        } catch (error) {
+            console.error(error);
+        }
+        };
+        useEffect(() => {
+          if(proxyAddr){
+            if (!walletConnected) {
+              web3ModalRef.current = new Web3Modal({
+                network: "hardhat",
+                providerOptions: {},
+                disableInjectedProvider: false,
+              });
+        
+              connectWallet().then(async () => {
+                console.log("useeffect reached")
+                getTimes();
+                updateBlockTimestamp();//need to see if this is necessary
+                getUserTrancheBalance();
+              });
+            }
+          }
+        }, [walletConnected]);
     
       const Balances = () =>{
         return (
           <div className={styles.balances}>
-            <h3 className={styles.balance}>Tranche SafeBet Balance: {utils.formatUnits(userABalance.toString(), 18)}</h3>
-            <h3 className={styles.balance}>Tranche BearerOfAll Balance: {utils.formatUnits(userBBalance.toString(), 18)}</h3>
+            <h3 className={styles.balance}>Tranche SafeBet Balance: {utils.formatUnits(userABalance? userABalance.toString(): 0, 18)}</h3>
+            <h3 className={styles.balance}>Tranche BearerOfAll Balance: {utils.formatUnits(userBBalance?userBBalance.toString():0, 18)}</h3>
           </div>
         )
       }
@@ -307,6 +277,7 @@ const Post = () => {
             }}/><br/>
             <div className={styles.centerRow}>
                 <button className={styles.mybutton} onClick={()=>{
+                  // console.log('clicked deposit')
                 mintForDAI(amountOfDAI);//redirect to success page
                 }}>Deposit</button>
             </div>
@@ -414,8 +385,8 @@ const Post = () => {
             <h3 className={styles.titleOptions}>LIQUID CASE</h3><br></br>
             <h3 className={styles.insurancesDetail}>The divest call has been made, the conversion of SafeBet and BearerOfAll tranches are both available.<br>
             </br><br></br><br></br>Claim your tranche tokens and convert them into DAI</h3><br></br><br></br><br></br>
-              <div className={styles.balances}><h3 className={styles.balance}>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>
-              <h3 className={styles.balance}>You have {utils.formatUnits(userBBalance.toString(), 18)} BearerOfAll tranche tokens</h3>
+              <div className={styles.balances}><h3 className={styles.balance}>You have {utils.formatUnits(userABalance?userABalance.toString():0, 18)} SafeBet tranche tokens</h3>
+              <h3 className={styles.balance}>You have {utils.formatUnits(userBBalance?userBBalance.toString(): 0, 18)} BearerOfAll tranche tokens</h3>
                 </div><br></br>
               <h3 className={styles.insurancesDetail}>Claim the DAI tokens that you are entitled to!</h3>  
               <div className={styles.centerRow}><button className={styles.mybutton} onClick={()=>(claimInLiquidmode())}>Claim!</button>
@@ -436,7 +407,7 @@ const Post = () => {
               <h3 style={{
                 marginLeft:"35vw",
                 width:"30vw",
-              }} className={styles.balance}>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>      
+              }} className={styles.balance}>You have {utils.formatUnits(userABalance?userABalance.toString():0, 18)} SafeBet tranche tokens</h3>      
               <br/>
                 <br/>
                 <div style={{
@@ -448,7 +419,7 @@ const Post = () => {
                     <div style = {{
                       width:"50vw",
                     }} className={styles.centerRow}><input className={styles.inputMini} placeholder="Amount from AAVE" onChange = {(e)=>{
-                      AfromAAVE = (e.target.value)
+                    setAfromAAVE(e.target.value)
                       }}></input>
                     </div>
                 </div>
@@ -493,7 +464,7 @@ const Post = () => {
               
             }}>
               <h2 className={styles.insurancesDetail}> Claim your SafeBet tranche tokens</h2>
-              <h3  className={styles.balance}>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>
+              <h3  className={styles.balance}>You have {utils.formatUnits(userABalance?userABalance.toString():0, 18)} SafeBet tranche tokens</h3>
                 <p className= {styles.insurancesDetail}>How much of your SafeBet tranche tokens do you want to redeem from AAVE?</p>
                 <br/>
                 <input className={styles.inputMini} label="AfromAAVE" placeholder="Amount from AAVE"></input>
@@ -510,7 +481,7 @@ const Post = () => {
 
             }}>
               <h2 className={styles.insurancesDetail}>Claim your BearerOfAll tranche tokens</h2>
-              <h3 className={styles.balance}>You have {utils.formatUnits(userBBalance.toString(), 18)} BearerOfAll tranche tokens</h3>
+              <h3 className={styles.balance}>You have {utils.formatUnits(userBBalance?userBBalance.toString():0, 18)} BearerOfAll tranche tokens</h3>
                 <p className={styles.insurancesDetail}>How much of your BearerOfAll tranche tokens do you want to redeem from AAVE?</p>
                 <br></br>
                 <input className={styles.inputMini} label="BfromAAVE" placeholder="Amount from AAVE" onChange = {(e)=>{BfromAAVE = e.target.value}}></input>
@@ -530,6 +501,7 @@ const Post = () => {
         </div>)
       }
       const Screen = () => {
+        console.log('blocktimestamp', blockTimeStamp)
         if (blockTimeStamp < S){
           return(
             <SScreen/>
@@ -558,19 +530,17 @@ const Post = () => {
           }else{
             return(
               <AboveTThree/>
-              // <TThree/>
-              // <TOne/>
             )
           }
           
       } else{
         return(
           <div>
-            <AboveTThree/>
+            <SScreen/>
           </div>
         )
       }
-    }
+      }
       return (
         <div>
           <Head>

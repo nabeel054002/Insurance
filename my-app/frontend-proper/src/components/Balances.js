@@ -6,7 +6,6 @@ export const Balances = ({
   userABalance, 
   userBBalance,
   cBalance,
-  contract
 }) =>{
     //get it from the fn and cbalance inuseeffect
 

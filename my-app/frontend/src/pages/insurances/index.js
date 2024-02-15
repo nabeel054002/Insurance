@@ -71,6 +71,7 @@ export default function Home(signerInput) {
         const description = await factoryContract.returnData(implementationContract.address);
         descriptionArr.push(description);
     }
+    console.log(descriptionArr)
     setProxyArr(proxyContracts);
     setImplementationArr(implementationContracts);
     setDescriptionArr(descriptionArr);

@@ -8,22 +8,32 @@ export const SScreen = ({
     daiContract,
     userABalance,
     userBBalance,
-    updateCBalance
+    getUserTrancheBalance,
+    updateBlockTimestamp
 })=>{
     
     const [amountOfDAI, setAmountOfDAI] = useState(0);
 
     const mintForDAI = async (value) => {
-        const valueBN = utils.parseUnits(value, 18);
-        const assistAddr = await contract?.assistContracAddr()
-        const tx3 = await daiContract.approve(assistAddr, valueBN);
-        await tx3.wait();
-        const tx = await contract?.splitRisk(valueBN, {
-          gasLimit: 30000000,
-        });
-        await tx.wait();
-        await updateCBalance();
-        // console.log('updated c abalce')
+        try{
+            const valueBN = utils.parseUnits(value, 18);
+            console.log('valueBN', valueBN)
+            const assistAddr = await contract.assistContracAddr()
+            console.log('assistAddr', assistAddr)
+            const tx3 = await daiContract.approve(assistAddr, valueBN);
+            await tx3.wait();
+            console.log('24')
+            const tx = await contract?.splitRisk(valueBN, {
+            gasLimit: 30000000,
+            });
+            await tx.wait();
+            console.log('29')
+            await getUserTrancheBalance();
+            await updateBlockTimestamp();
+            // console.log('updated c abalce')
+        } catch(err) {
+            console.log('err', err)
+        }
     }
 
 
