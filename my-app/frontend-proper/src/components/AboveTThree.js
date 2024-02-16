@@ -13,6 +13,11 @@ export const AboveTThree = ({
   contract
 })=>{
 
+  const zero = BigNumber.from("0");
+  const [AfromAAVE, setAfromAAVE] = useState(zero);
+  const [AfromCompound, setAfromCompound] = useState(zero);
+  const [BfromCompound, setBfromCompound] = useState(zero);
+  const [BfromAAVE, setBfromAAVE] = useState(zero);
       
   const claimInFallbackMode = async (AfromAAVE, AfromCompound, BfromAAVE, BfromCompound) =>{
     const AfromAAVEBN = utils.parseUnits(AfromAAVE.toString(), 18);
@@ -44,10 +49,10 @@ export const AboveTThree = ({
           <h3  className={styles.balance}>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>
             <p className= {styles.insurancesDetail}>How much of your SafeBet tranche tokens do you want to redeem from AAVE?</p>
             <br/>
-            <input className={styles.inputMini} label="AfromAAVE" placeholder="Amount from AAVE"></input>
+            <input className={styles.inputMini} label="AfromAAVE" placeholder="Amount from AAVE"onChanage={(e)=>{setAfromCompound(e.target.value)}} ></input>
           <p className={styles.insurancesDetail}>How much of your SafeBet tranche tokens do you want to redeem from Compound?</p> 
           <br/>
-          <input className={styles.inputMini} label = "AfromCompound" placeholder="Amount from Compound" onChanage={(e)=>{setAfromCompound}}></input>
+          <input className={styles.inputMini} label = "AfromCompound" placeholder="Amount from Compound" onChanage={(e)=>{setAfromCompound(e.target.value)}}></input>
         </div>
         <div style={{
           display: "flex",
@@ -61,11 +66,11 @@ export const AboveTThree = ({
           <h3 className={styles.balance}>You have {utils.formatUnits(userBBalance.toString(), 18)} BearerOfAll tranche tokens</h3>
             <p className={styles.insurancesDetail}>How much of your BearerOfAll tranche tokens do you want to redeem from AAVE?</p>
             <br></br>
-            <input className={styles.inputMini} label="BfromAAVE" placeholder="Amount from AAVE" onChange = {(e)=>{BfromAAVE = e.target.value}}></input>
+            <input className={styles.inputMini} label="BfromAAVE" placeholder="Amount from AAVE" onChange = {(e)=>{setBfromAAVE(e.target.value)}}></input>
           <p style = {{width:"30vw"}}className={styles.insurancesDetail}>How much of your BearerOfAll tranche tokens do you want to redeem from Compound?</p>
           <br/>
           <input className={styles.inputMini} placeholder="Amount from Compound" label="BfromCompound" onChange = {(e)=>{
-            BfromCompound = e.target.value
+            setBfromCompound(e.target.value)
           }}></input>
         </div>
       </div>

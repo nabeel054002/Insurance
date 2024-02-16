@@ -11,10 +11,11 @@ async function main() {
     const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545/");
     const signer = provider.getSigner();
     const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+    console.log('14')
     const AssistContract = await ethers.getContractFactory("SplitRiskV2Assist", signer);
     const deployedAssistContract = await AssistContract.deploy("0x6B175474E89094C44Da98b954EedeAC495271d0F", "0x028171bCA77440897B824Ca71D1c56caC55b68A3","0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643", {gasLimit: 30000000});
     await deployedAssistContract.deployed();
-
+    console.log('18')
     const RiskSpectrumContract = await ethers.getContractFactory(
         "SplitInsuranceV2",
         signer

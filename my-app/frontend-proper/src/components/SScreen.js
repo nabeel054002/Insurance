@@ -15,9 +15,11 @@ export const SScreen = ({
     const [amountOfDAI, setAmountOfDAI] = useState(0);
 
     const mintForDAI = async (value) => {
+        await updateBlockTimestamp();
         try{
             const valueBN = utils.parseUnits(value, 18);
             console.log('valueBN', valueBN)
+            console.log('contract', contract)
             const assistAddr = await contract.assistContracAddr()
             console.log('assistAddr', assistAddr)
             const tx3 = await daiContract.approve(assistAddr, valueBN);
@@ -28,12 +30,14 @@ export const SScreen = ({
             });
             await tx.wait();
             console.log('29')
-            await getUserTrancheBalance();
-            await updateBlockTimestamp();
             // console.log('updated c abalce')
         } catch(err) {
-            console.log('err', err)
+            console.log('err here', err)
+            // throw Error(err)
         }
+
+        await getUserTrancheBalance();
+        await updateBlockTimestamp();
     }
 
 

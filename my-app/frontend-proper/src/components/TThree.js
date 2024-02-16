@@ -7,6 +7,10 @@ export const TThree = ({
   inLiquidMode,
   contract
 })=>{  
+    const zero = BigNumber.from("0");
+    const [AfromAAVE, setAfromAAVE] = useState(zero);
+    const [AfromCompound, setAfromCompound] = useState(zero);
+
     const claimInOnlyA = async (AfromAAVE, AfromCompound) =>{
       const AfromAAVEBN = utils.parseUnits(AfromAAVE.toString(), 18);
       const AfromCompoundBN = utils.parseUnits(AfromCompound.toString(), 18);
@@ -73,7 +77,7 @@ export const TThree = ({
                   width:"50vw",
                 }} className={styles.centerRow}>
                   <input className={styles.inputMini} placeholder="Amount from Compound" onChange = {(e)=>{
-                  AfromCompound = e.target.value
+                  setAfromCompound(e.target.value)
               }}></input> 
                 </div>
             </div>

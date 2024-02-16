@@ -15,6 +15,7 @@ module.exports = {
         enabled:true,
         url:process.env.MAINNET_HTTP_URL,
         accounts:[process.env.PRIVATE_KEY],
+        // blockNumber: 19238683
       },
       chainId:1,
   },

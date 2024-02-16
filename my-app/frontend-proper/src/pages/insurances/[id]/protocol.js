@@ -168,7 +168,7 @@ const Post = ({
         inLiquidMode={inLiquidMode}
         contract={contract}
       />)
-      else if (blockTimeStamp > tThree) return inLiquidMode ? (<TThree
+      else if (blockTimeStamp > tThree) return (inLiquidMode ? (<TThree
         inLiquidMode={inLiquidMode}
         contract={contract}
       />) : (<AboveTThree
@@ -179,12 +179,9 @@ const Post = ({
         userABalance={userABalance}
         userBBalance={userBBalance}
         contract={contract}
-      />)
+      />))
       else return <div>here</div>
-      return(<div>
-        {S.toString()} is s
-        {blockTimeStamp} is timestamp of block
-      </div>)
+
     } else return (<div>Waiting for time values!</div>)
   }
   return (
@@ -200,6 +197,10 @@ const Post = ({
       </Head>
       <main className={styles.main}>
           {signer ? <Screen/> : <div>Empty Signer!</div>}
+          {blockTimeStamp.toString()}<br/>
+          {S.toString()}<br/>
+          {tOne.toString()}<br/>
+          {tTwo.toString()}<br/>
       </main>
     </div>
   );
