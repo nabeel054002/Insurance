@@ -14,7 +14,7 @@ import { TrancheAbi } from "@/constants";
 
 function Home(signerInput) {
     const [count, setCount] = useState(0);
-    let proxyAddr = "";
+    let proxyAddr = "";//getProxyADdr addtiion here
     const router = useRouter()
     const { id } = router.query;
     let slicerIdx = 0;
@@ -36,9 +36,9 @@ function Home(signerInput) {
     const [description, setDescription] = useState([null, null]);
     const [exchangeAddr, setExchangeAddr] = useState("")
     const [walletConnected, setWalletConnected] = useState(false);
-    let balanceOne = 0;
-    let balanceTwo = 0;
-    let blncDEX = 0;
+    const [balanceOne, setBalanceOne] = useState(zero)
+    const [balanceTwo, setBalanceTwo] = useState(zero);
+    const [balanceDEX, setBalanceDEX] = useState(zero);
     const [sfbtBalance, setSfbtBalance] = useState(zero);
     const [bflBalances, setBflBalance] = useState(zero);
     const [lpBalance,setLpBalance] = useState(zero)
@@ -147,7 +147,7 @@ function Home(signerInput) {
         const factoryContract = new Contract(factoryAddr, factoryAbi, signer);
         const exchangeAddr = await factoryContract.riskSpectrumExchangeContracts(implementationAddr);
         const exchangeContract = new Contract(exchangeAddr, exchangeAbi, signer);
-        const tx = await exchangeContract.swapInputA(utils.parseUnits(blncDEX, 18), {
+        const tx = await exchangeContract.swapInputA(utils.parseUnits(balanceDEX, 18), {
             gasLimit: 1000000,
         });
         await tx.wait();
@@ -158,7 +158,7 @@ function Home(signerInput) {
         const factoryContract = new Contract(factoryAddr, factoryAbi, signer);
         const exchangeAddr = await factoryContract.riskSpectrumExchangeContracts(implementationAddr);
         const exchangeContract = new Contract(exchangeAddr, exchangeAbi, signer);
-        const tx = await exchangeContract.swapInputB(utils.parseUnits(blncDEX, 18), {
+        const tx = await exchangeContract.swapInputB(utils.parseUnits(balanceDEX, 18), {
             gasLimit: 1000000,
         });
         await tx.wait();
@@ -193,11 +193,11 @@ function Home(signerInput) {
             <div className={styles.inputBox}>
                 <input className={styles.inputMini} type="number" placeholder = {"Enter the amount of SafeBet tranches to pool"}
                 onChange = {(event) => {
-                    balanceOne = (event.target.value)
+                    setBalanceOne(event.target.value)
                 }}></input>
                 <input className={styles.inputMini} type="number" placeholder = "Enter the amount of BearerOfAll tranches to pool"
                 onChange = {(event) => {
-                    balanceTwo = (event.target.value);
+                    setBalanceTwo(event.target.value);
                 }}></input> 
             </div>
                 <br/>
@@ -215,7 +215,7 @@ function Home(signerInput) {
                 <h3 className={styles.insurancesDetail}>Enter the amount that you want to swap, input as SafeBet tranches or as BearerOfAll tranches</h3>
                 <div>
                     <input className={styles.inputMini} type = "number" onChange = {(event) => {
-                        blncDEX = (event.target.value);
+                        setBalanceDEX(event.target.value);
                     }}placeholder = "Input amount to swap"></input>
                 </div>
                 <div>

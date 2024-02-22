@@ -11,6 +11,7 @@ export default function App({ Component, pageProps }) {
     const [walletConnected, setWalletConnected] = useState(false);
     const [provider, setProvider] = useState(null)
     const web3ModalRef = useRef();
+    const signerRef = useRef();
 
     useEffect(() => {
         if (!walletConnected) {
@@ -19,6 +20,8 @@ export default function App({ Component, pageProps }) {
             providerOptions: {},
             disableInjectedProvider: false,
           });
+
+          // signerRef.current = signer
     
           connectWallet();
         }

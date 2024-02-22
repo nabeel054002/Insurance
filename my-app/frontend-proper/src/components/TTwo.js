@@ -4,7 +4,9 @@ import styles from "../styles/Home.module.css"
 import {utils} from "ethers"
 
 export const TTwo = ({
-  contract
+  contract,
+  isLiquid,
+  getLiquidityStatus
 })=>{
 
   const divest = async () =>{
@@ -12,6 +14,7 @@ export const TTwo = ({
       gasLimit: 1000000,
     })
     await tx.wait();
+    await getLiquidityStatus()
   }
   return (<div>
     <h3 className={styles.titleOptions}>The divest call is to made today</h3><br></br><br></br>
@@ -47,7 +50,7 @@ export const TTwo = ({
       </div>
     </ul>
     <div className={styles.centerRow}>
-      <button className={styles.mybutton} onClick = {divest}>Divest!</button>
+      {isLiquid? (<button className={styles.mybutton} onClick = {divest}>Divest!</button>) : <div></div>}
     </div>
     </div>)
 }

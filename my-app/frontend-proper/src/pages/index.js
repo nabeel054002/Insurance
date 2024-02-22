@@ -29,6 +29,7 @@ export default function Home() {
               <button className={styles.varyRisk}><Link href="./insurances"><p>VARY RISK!</p></Link></button>
               
               <button className={styles.createRiskSpectrum}><p>CREATE RISK SPECTRUM!</p></button>
+              {/* TODO: create risk spectrum pages  */}
             </div>
             <br/>
 

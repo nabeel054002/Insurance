@@ -34,16 +34,20 @@ export const TOne = ({
     console.log('finished Investing')
     await getUserTrancheBalance();
     await updateBlockTimestamp();
-
   }
 
   const invest = async () => {
-    const tx = await contract?.invest({
-      gasLimit: 1000000,
-    })
-    await tx.wait();
-    console.log('invested!')
-    getIsInvested();
+  
+    console.log('etnered invest', contract)
+    try {
+      const tx = await contract?.invest({
+        gasLimit: 1000000,
+      })
+      console.log('tx got')
+      await tx.wait();
+      console.log('invested!')
+    } catch{(e) => {console.log('e', e)}}
+    await getIsInvested();
   }
 
   return (<div>

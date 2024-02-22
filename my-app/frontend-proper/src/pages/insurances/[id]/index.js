@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../../../styles/Home.module.css";
-import {useRef, useEffect, useState, React} from "react"
+import {React} from "react"
 import { BigNumber, providers, ethers, Contract, utils} from "ethers";
 import {factoryAbi, factoryAddr, proxyAbi} from "../../../constants";
 import Web3Modal from "web3modal"

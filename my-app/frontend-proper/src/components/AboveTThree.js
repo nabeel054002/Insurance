@@ -1,13 +1,9 @@
 import {Balances} from './Balances'
 import {useState, useEffect, useRef} from "react";
 import styles from "../styles/Home.module.css"
-import {utils} from "ethers"
+import {utils, BigNumber} from "ethers"
 
 export const AboveTThree = ({
-  AfromAAVE,
-  AfromCompound,
-  BfromAAVE,
-  BfromCompound,
   userABalance,
   userBBalance,
   contract
@@ -49,10 +45,10 @@ export const AboveTThree = ({
           <h3  className={styles.balance}>You have {utils.formatUnits(userABalance.toString(), 18)} SafeBet tranche tokens</h3>
             <p className= {styles.insurancesDetail}>How much of your SafeBet tranche tokens do you want to redeem from AAVE?</p>
             <br/>
-            <input className={styles.inputMini} label="AfromAAVE" placeholder="Amount from AAVE"onChanage={(e)=>{setAfromCompound(e.target.value)}} ></input>
+            <input className={styles.inputMini} label="AfromAAVE" placeholder="Amount from AAVE"onChange={(e)=>{setAfromAAVE(e.target.value)}} ></input>
           <p className={styles.insurancesDetail}>How much of your SafeBet tranche tokens do you want to redeem from Compound?</p> 
           <br/>
-          <input className={styles.inputMini} label = "AfromCompound" placeholder="Amount from Compound" onChanage={(e)=>{setAfromCompound(e.target.value)}}></input>
+          <input className={styles.inputMini} label = "AfromCompound" placeholder="Amount from Compound" onChange={(e)=>{setAfromCompound(e.target.value)}}></input>
         </div>
         <div style={{
           display: "flex",

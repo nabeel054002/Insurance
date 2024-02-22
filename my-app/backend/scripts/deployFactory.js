@@ -34,15 +34,12 @@ async function main() {
     await deployedFactory.deployed();
     console.log("Assist, Implementation and Factory contract has been deployed");
     console.log("the next step is to deploy the proxy and by deploying the proxy the implementation of the proxy naturally gets initialized")
-
     console.log(`Factory Address, ${deployedFactory.address} `)
     console.log(`Deployed Risk Spectrum contract, ${thirdDeployedSpectrumContract.address} `)
     console.log(process.env.MAINNET_HTTP_URL)
     const contract = new Contract(deployedFactory.address, factoryAbi, signer);
     console.log('contract', await deployedFactory.riskSpectrumContractsArrayLength())
     await deployedFactory.deployRiskSpectrum(deployedRiskSpectrumContract.address, deployedAssistContract.address, { gasLimit: 5000000 });
-    console.log('43')
-    console.log('45')
     const tx3 = await deployedFactory.deployRiskSpectrum(secondDeployedSpectrumContract.address, deployedAssistContract.address);
     console.log('43')
     await tx3.wait();
@@ -51,13 +48,12 @@ async function main() {
     await tx4.wait();
 
     console.log('riskspectrums', thirdDeployedSpectrumContract.address)
-
     console.log("have deployed the proxy contracts and hence initialized them as well")
     console.log(`const assistAddr = "${deployedAssistContract.address}"`);
     console.log(`const factoryAddr = "${deployedFactory.address}"`);
 
     console.log(await deployedFactory.riskSpectrumContractsArrayLength())
-
+      
     //factory deploys the proxy contract and the exchange contract
 
 }

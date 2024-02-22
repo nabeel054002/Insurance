@@ -25,19 +25,18 @@ export const SScreen = ({
             const tx3 = await daiContract.approve(assistAddr, valueBN);
             await tx3.wait();
             console.log('24')
-            const tx = await contract?.splitRisk(valueBN, {
-            gasLimit: 30000000,
+            try {const tx = await contract?.splitRisk(valueBN, {
+                gasLimit: 30000000,
             });
             await tx.wait();
-            console.log('29')
+            console.log('29')} catch(err){ console.log('error in splitting risk', err) }
             // console.log('updated c abalce')
+            await getUserTrancheBalance();
+            await updateBlockTimestamp();
         } catch(err) {
             console.log('err here', err)
             // throw Error(err)
         }
-
-        await getUserTrancheBalance();
-        await updateBlockTimestamp();
     }
 
 

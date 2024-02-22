@@ -31,7 +31,7 @@ contract SplitRiskV2Assist {
 
     constructor (address _c, address _cx, address _cy) {
         S = block.timestamp + 100; // +3 minutes// add T1, T2, T3 as the input
-        T1 = S + 1000; // +6minutes
+        T1 = S + 100; // +6minutes
         T2 = T1 + 100; // +2minutes
         T3 = T2 + 100; // +3minutes
 

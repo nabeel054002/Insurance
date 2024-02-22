@@ -1,5 +1,5 @@
-const assistAddr = "0xEC7cb8C3EBE77BA6d284F13296bb1372A8522c5F"
-const factoryAddr = "0x4Dd5336F3C0D70893A7a86c6aEBe9B953E87c891"
+const assistAddr = "0x31403b1e52051883f2Ce1B1b4C89f36034e1221D"
+const factoryAddr = "0x876939152C56362e17D508B9DEA77a3fDF9e4083"
 const proxyAbi = [
     {
       "inputs": [

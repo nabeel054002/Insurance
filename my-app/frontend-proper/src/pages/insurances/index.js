@@ -16,14 +16,16 @@ export default function Home({
 
 
   useEffect(() => {
-    getRiskSpectrums()
+    signer ? getRiskSpectrums(): null;
   }, [signer])
 
   const getRiskSpectrums = async () => {
     console.log('signer', signer?'Signer there':'empty signer')
     if(!signer) return;
     const factoryContract = new Contract(factoryAddr, factoryAbi, signer);
+    console.log('factoryContract', factoryContract)
     let arrLength = await factoryContract.riskSpectrumContractsArrayLength();
+    console.log('arrlength')
     console.log('arrLength', arrLength)
     const proxyContracts = [];
     const implementationContracts = [];

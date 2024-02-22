@@ -35,7 +35,6 @@ const Post = ({
   const [userABalance, setUserABalance] = useState(zero);//set this
   const [userBBalance, setUserBBalance] = useState(zero);//set this
   const [cBalance, setCBalance] = useState(zero);
-  console.log('this')
 
   const router = useRouter();
 
@@ -46,7 +45,7 @@ const Post = ({
       for(let i = 0; i < 100; i++){
         if(id.substring(i,i+5) === "PAUSE"){
           slicerIdx = i;
-          break;
+          break; 
         }
       }
       setProxyAddr(id.substring(slicerIdx+5, id.length));
@@ -60,7 +59,6 @@ const Post = ({
     if(!signer) return;
     setContract(new Contract(proxyAddr, implementationAbi, signer));
     setDaiContract(new Contract(daiAddress, daiAbi, signer))
-    console.log('this one!')
   } 
 
   useEffect(() => {
@@ -70,21 +68,12 @@ const Post = ({
 
   const updateBlockTimestamp = async () =>{
     //assuming provider to not be null since signer 
-    console.log('provider', provider)
     if(provider){
-      console.log('inside provider')
-      console.log('web3Provider', provider)
       provider.getBlock('latest').then((block) => {
         setBlockTimeStamp(block.timestamp)
-        console.log('updated')
       })
     }
-    console.log('updatedBlockTimestamp')
   }
-
-  useEffect(()=>{
-    provider ? updateBlockTimestamp() : null;
-  }, [provider])
 
   const getLiquidityStatus = async () => {
     const isInvested = (await contract.isInvested())
@@ -99,9 +88,9 @@ const Post = ({
       setTOne((await contract.T1()));
       setTTwo((await contract.T2()));
       setTThree((await contract.T3()));
-      console.log("Got times!")
     }
     else {
+      console.log('contract not in the gettimes !!')
       return;
     }
   }
@@ -109,24 +98,20 @@ const Post = ({
 
   const getUserTrancheBalance = async () =>{
     const addrUser = (await signer.getAddress())
-    console.log('addrUser', addrUser)
-    console.log('contract', contract, contract.A)
     const AtrancheAddr = (await contract.A());
     const BtrancheAddr = (await contract.B());
     const AtrancheContract = new Contract(AtrancheAddr, TrancheAbi, signer);
     const AtrancheBalance = await AtrancheContract?.balanceOf(addrUser);
-    console.log('AtrancheBalance', AtrancheBalance)
     setUserABalance(AtrancheBalance);
     const BtrancheContract = new Contract(BtrancheAddr, TrancheAbi, signer);
     const BtrancheBalance = await BtrancheContract.balanceOf(addrUser);
-    console.log('BtrancheBalance', BtrancheBalance)
     setUserBBalance(BtrancheBalance);
-    console.log('got user tranch blanace')
   }
 
   useEffect(() => {
     //if contract was not null, then signer and proxyAddr are also not null...
     if(contract && contract.S && contract.A && signer){
+      updateBlockTimestamp();
       getTimes();
       getUserTrancheBalance();
       updateCBalance();
@@ -140,7 +125,6 @@ const Post = ({
   }
     
   const Screen = () => {
-    // console.log('blocktimestamp', blockTimeStamp)
     if(blockTimeStamp && S && tOne && tTwo && tThree){//if its able to get the timestamp values, signer toh definitely it will be having
       if (blockTimeStamp < S) 
       return (<SScreen
@@ -163,6 +147,8 @@ const Post = ({
       />)
       else if (blockTimeStamp < tTwo) return (<TTwo
         contract={contract}
+        isLiquid={inLiquidMode}
+        getLiquidityStatus={getLiquidityStatus}
       />)
       else if (blockTimeStamp < tThree) return (<TThree
         inLiquidMode={inLiquidMode}
@@ -208,3 +194,6 @@ const Post = ({
 }
 
 export default Post
+
+//learn custom hooks
+//state management libraries 
